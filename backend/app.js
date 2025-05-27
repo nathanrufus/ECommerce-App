@@ -4,22 +4,30 @@ const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
 const morgan = require('morgan');
-const authRoutes = require('./routes/auth'); // Add more routes as you build
+const path = require('path');
+
+// Routes
+const authRoutes = require('./routes/auth');
+const productRoutes = require('./routes/productRoutes');
 
 const app = express();
 
-// Global Middlewares
-app.use(helmet());              // Security headers
-app.use(cors());                // Enable CORS
-app.use(morgan('dev'));         // HTTP request logger
-app.use(express.json());        // Parse JSON request bodies
+// Middleware
+app.use(helmet());
+app.use(cors());
+app.use(morgan('dev'));
+app.use(express.json());
 
-// Routes
+// Static file serving (for uploaded images)
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
+// Route handlers
 app.use('/api/auth', authRoutes);
+app.use('/api', productRoutes);
 
-// Health check (optional)
+// Root route
 app.get('/', (req, res) => {
-  res.json({ message: 'E-commerce API is running ✅' });
+  res.json({ message: 'E-commerce API running ✅' });
 });
 
 // 404 handler
