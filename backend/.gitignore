@@ -1,0 +1,31 @@
+# Node dependencies
+node_modules/
+pnpm-lock.yaml
+
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Environment variables
+.env
+
+# System
+.DS_Store
+Thumbs.db
+
+# Editor directories and files
+.vscode/
+.idea/
+*.sublime-workspace
+*.sublime-project
+
+# Sequelize CLI migration logs (optional)
+.sequelize
+
+# Build or dist output
+dist/
+build/
