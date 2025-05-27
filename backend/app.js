@@ -11,6 +11,8 @@ const authRoutes = require('./routes/auth');
 const productRoutes = require('./routes/productRoutes');
 const metaRoutes = require('./routes/adminMetaRoutes');
 const orderRoutes = require('./routes/orderRoutes');
+const reviewWishlistRoutes = require('./routes/reviewWishlistRoutes');
+
 
 
 
@@ -30,6 +32,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api', productRoutes);
 app.use('/api', metaRoutes);
 app.use('/api', orderRoutes);
+app.use('/api', reviewWishlistRoutes);
 
 
 // Root route
