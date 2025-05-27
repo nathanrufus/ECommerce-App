@@ -10,6 +10,8 @@ const path = require('path');
 const authRoutes = require('./routes/auth');
 const productRoutes = require('./routes/productRoutes');
 const metaRoutes = require('./routes/adminMetaRoutes');
+const orderRoutes = require('./routes/orderRoutes');
+
 
 
 const app = express();
@@ -27,6 +29,7 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.use('/api/auth', authRoutes);
 app.use('/api', productRoutes);
 app.use('/api', metaRoutes);
+app.use('/api', orderRoutes);
 
 
 // Root route
