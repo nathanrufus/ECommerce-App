@@ -1,29 +1,31 @@
-# Node.js dependencies
+# Node dependencies
 node_modules/
+pnpm-lock.yaml
 
-# Environment
-.env
 
 # Logs
 logs/
 *.log
 npm-debug.log*
 yarn-debug.log*
-pnpm-debug.log*
+yarn-error.log*
 
-# OS files
+# Environment variables
+.env
+
+# System
 .DS_Store
 Thumbs.db
 
-# Sequelize artifacts
-.sequelize
-/migrations/*.js
-/seeders/*.js
-
-# Build outputs
-dist/
-build/
-
-# Folders for editors
+# Editor directories and files
 .vscode/
 .idea/
+*.sublime-workspace
+*.sublime-project
+
+# Sequelize CLI migration logs (optional)
+.sequelize
+/migrations/*.js
+# Build or dist output
+dist/
+build/
