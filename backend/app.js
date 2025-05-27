@@ -9,6 +9,8 @@ const path = require('path');
 // Routes
 const authRoutes = require('./routes/auth');
 const productRoutes = require('./routes/productRoutes');
+const metaRoutes = require('./routes/adminMetaRoutes');
+
 
 const app = express();
 
@@ -24,6 +26,8 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 // Route handlers
 app.use('/api/auth', authRoutes);
 app.use('/api', productRoutes);
+app.use('/api', metaRoutes);
+
 
 // Root route
 app.get('/', (req, res) => {
