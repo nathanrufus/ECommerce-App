@@ -9,8 +9,8 @@ export default function Navbar() {
   const [open, setOpen] = useState(false);
 
   return (
-    <nav className="bg-[#70B244] text-white px-6 py-4 shadow-md backdrop-blur-sm">
-      <div className="flex justify-between items-center max-w-7xl mx-auto">
+    <nav className="fixed top-0 left-0 right-0 z-50 bg-[#70B244] text-white px-6 py-4 shadow-md backdrop-blur-sm">
+      <div className="flex justify-between items-center max-w-7xl mx-auto relative">
         {/* Logo + Brand */}
         <Link href="/" className="flex items-center space-x-3">
           <Image
@@ -35,17 +35,17 @@ export default function Navbar() {
         <button className="md:hidden" onClick={() => setOpen(!open)}>
           {open ? <X size={24} /> : <Menu size={24} />}
         </button>
-      </div>
 
-      {/* Mobile Nav Menu */}
-      {open && (
-        <div className="flex flex-col mt-4 space-y-3 md:hidden text-sm font-medium">
-          <Link href="/products" className="hover:underline">Shop</Link>
-          <Link href="/explore" className="hover:underline">Explore</Link>
-          <Link href="/cart" className="hover:underline">Cart</Link>
-          <Link href="/login" className="hover:bg-white hover:text-[#70B244] px-3 py-1 rounded transition">Login</Link>
-        </div>
-      )}
+        {/* Mobile Nav Menu - Absolute Dropdown */}
+        {open && (
+          <div className="absolute top-full right-0 mt-2 w-full bg-[#70B244] text-white rounded-md shadow-md flex flex-col py-3 space-y-2 md:hidden z-50">
+            <Link href="/products" className="px-6 py-2 hover:bg-white/10">Shop</Link>
+            <Link href="/explore" className="px-6 py-2 hover:bg-white/10">Explore</Link>
+            <Link href="/cart" className="px-6 py-2 hover:bg-white/10">Cart</Link>
+            <Link href="/login" className="px-6 py-2 hover:bg-white text-[#70B244] bg-white rounded-md mx-6 text-center">Login</Link>
+          </div>
+        )}
+      </div>
     </nav>
   );
 }

@@ -27,7 +27,8 @@ export default function HomePage() {
 useEffect(() => {
   const fetchCategories = async () => {
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/categories`);
+      const baseURL = process.env.NEXT_PUBLIC_API_BASE_URL;
+      const res = await fetch(`${baseURL}/categories`)
       if (!res.ok) throw new Error("Failed to fetch categories");
       const data = await res.json();
       setCategories(data);
@@ -42,7 +43,9 @@ useEffect(() => {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/products`);
+        const baseURL = process.env.NEXT_PUBLIC_API_BASE_URL;
+
+        const res = await fetch (`${baseURL}/products`)
         if (!res.ok) throw new Error("Failed to fetch products");
         const data = await res.json();
         setProducts(data.slice(0, 8)); 
@@ -55,7 +58,7 @@ useEffect(() => {
   }, []);
 
   return (
-    <div className="space-y-15">
+    <div className="space-y-15 pt-20">
       {/* Hero Section */}
       <section className="bg-white py-16">
         <div className="max-w-6xl mx-auto px-4 flex flex-col md:flex-row items-center justify-between gap-10">

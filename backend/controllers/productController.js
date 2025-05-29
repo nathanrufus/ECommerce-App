@@ -1,4 +1,5 @@
-const { Product, Category, Brand, MediaFile } = require('../models');
+const { Product, Category, Brand, MediaFile ,Review} = require('../models');
+const { Op } = require('sequelize');
 const slugify = require('slugify');
 
 exports.createProduct = async (req, res) => {
@@ -84,14 +85,42 @@ exports.getAllProducts = async (req, res) => {
 exports.getProductBySlug = async (req, res) => {
   try {
     const slug = req.params.slug;
-    const product = await Product.findOne({ where: { slug }, include: [Category, Brand, MediaFile] });
+
+    const product = await Product.findOne({
+      where: { slug },
+      include: [Category, Brand, MediaFile],
+    });
+
     if (!product) return res.status(404).json({ message: 'Product not found' });
-    res.json(product);
+
+    const reviews = await Review.findAll({
+      where: { product_id: product.id },
+      include: ['User'], 
+      order: [['createdAt', 'DESC']],
+    });
+
+    const related = await Product.findAll({
+      where: {
+        category_id: product.category_id,
+        slug: { [Op.ne]: slug },
+      },
+      attributes: ['id', 'name', 'slug', 'price'], 
+      include: [{ model: MediaFile }], 
+      limit: 4,
+    });
+    
+
+    res.json({
+      product,
+      related,
+      reviews,
+    });
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Error fetching product' });
   }
 };
+
 
 exports.getCategories = async (req, res) => {
   try {
