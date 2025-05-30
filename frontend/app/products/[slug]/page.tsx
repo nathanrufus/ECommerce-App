@@ -7,6 +7,9 @@ import {
 import Image from "next/image"
 import Link from "next/link"
 import { useParams } from "next/navigation"
+import useCartStore from "@/store/cartStore"
+import { toast } from "react-hot-toast"
+import ReviewForm from "@/components/ReviewForm"
 
 type Product = {
 	id: string
@@ -33,6 +36,8 @@ type Related = {
 }
 
 export default function ProductDetailsPage() {
+	const { addToCart } = useCartStore()
+
 	const { slug } = useParams()
 	const [product, setProduct] =
 		useState<Product | null>(null)
@@ -63,6 +68,18 @@ export default function ProductDetailsPage() {
 
 		fetchData()
 	}, [slug])
+	const handleAddToCart = () => {
+		if (!product) return
+
+		addToCart({
+			id: parseInt(product.id),
+			name: product.name,
+			price: product.price,
+			quantity,
+		})
+
+		toast.success("Added to cart")
+	}
 
 	if (!product)
 		return (
@@ -153,6 +170,7 @@ export default function ProductDetailsPage() {
 
 					{/* Add to Cart */}
 					<button
+						onClick={handleAddToCart}
 						disabled={
 							product.stock_quantity < 1
 						}
@@ -168,8 +186,9 @@ export default function ProductDetailsPage() {
 				<h3 className="text-2xl font-bold mb-6 text-[#1B1D30]">
 					Customer Reviews
 				</h3>
+
 				{reviews.length === 0 ? (
-					<p className="text-gray-500">
+					<p className="text-gray-500 mb-4">
 						No reviews yet.
 					</p>
 				) : (
@@ -190,6 +209,14 @@ export default function ProductDetailsPage() {
 						</div>
 					))
 				)}
+
+				{/* Review Form Below List */}
+				<ReviewForm
+					productId={product.id}
+					onSuccess={() =>
+						window.location.reload()
+					}
+				/>
 			</div>
 
 			{/* Related Products */}
