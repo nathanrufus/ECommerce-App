@@ -1,26 +1,7 @@
-'use strict';
-const {
-  Model
-} = require('sequelize');
-module.exports = (sequelize, DataTypes) => {
-  class Wishlist extends Model {
-    /**
-     * Helper method for defining associations.
-     * This method is not a part of Sequelize lifecycle.
-     * The `models/index` file will call this method automatically.
-     */
-    static associate(models) {
-      Wishlist.belongsTo(models.User, { foreignKey: 'customer_id' });
-      Wishlist.belongsTo(models.Product, { foreignKey: 'product_id' });
+const mongoose = require('mongoose');
 
-    }
-  }
-  Wishlist.init({
-    customer_id: DataTypes.INTEGER,
-    product_id: DataTypes.INTEGER
-  }, {
-    sequelize,
-    modelName: 'Wishlist',
-  });
-  return Wishlist;
-};
+const wishlistSchema = new mongoose.Schema({
+  customer_id: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+  product_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Product' }
+}, { timestamps: true });
+module.exports = mongoose.model('Wishlist', wishlistSchema);

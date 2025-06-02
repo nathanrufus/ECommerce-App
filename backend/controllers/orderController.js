@@ -1,4 +1,6 @@
-const { Order, OrderItem, Product, User } = require('../models');
+const Order = require('../models/order');
+const OrderItem = require('../models/orderitem');
+const Product = require('../models/product');
 
 exports.createOrder = async (req, res) => {
   try {
@@ -6,10 +8,11 @@ exports.createOrder = async (req, res) => {
     const customer_id = req.user.id;
 
     let total_amount = 0;
+    const orderItemIds = [];
 
-    // Validate products and calculate total
-    const orderItems = await Promise.all(items.map(async item => {
-      const product = await Product.findByPk(item.product_id);
+    // Validate products and calculate totals
+    for (const item of items) {
+      const product = await Product.findById(item.product_id);
       if (!product || product.stock_quantity < item.quantity) {
         throw new Error(`Invalid or insufficient stock for product ID ${item.product_id}`);
       }
@@ -17,35 +20,31 @@ exports.createOrder = async (req, res) => {
       const lineTotal = item.quantity * product.price;
       total_amount += lineTotal;
 
-      return {
+      // Create and save order item
+      const orderItem = new OrderItem({
         product_id: item.product_id,
         quantity: item.quantity,
         price: product.price
-      };
-    }));
+      });
+      await orderItem.save();
+      orderItemIds.push(orderItem._id);
 
-    // Create order
-    const order = await Order.create({
+      // Decrease stock
+      await Product.findByIdAndUpdate(item.product_id, {
+        $inc: { stock_quantity: -item.quantity }
+      });
+    }
+
+    // Create and save order
+    const order = new Order({
       customer_id,
       order_date: new Date(),
       status: 'pending',
       total_amount,
-      shipping_address
+      shipping_address,
+      items: orderItemIds
     });
-
-    // Save order items
-    for (const item of orderItems) {
-      await OrderItem.create({
-        ...item,
-        order_id: order.id
-      });
-
-      // Decrease product stock
-      await Product.decrement('stock_quantity', {
-        by: item.quantity,
-        where: { id: item.product_id }
-      });
-    }
+    await order.save();
 
     res.status(201).json({ message: 'Order placed successfully', order });
   } catch (err) {
@@ -56,10 +55,7 @@ exports.createOrder = async (req, res) => {
 
 exports.getUserOrders = async (req, res) => {
   try {
-    const orders = await Order.findAll({
-      where: { customer_id: req.user.id },
-      include: [OrderItem]
-    });
+    const orders = await Order.find({ customer_id: req.user.id }).populate('items');
     res.json(orders);
   } catch (err) {
     console.error(err);
@@ -70,9 +66,10 @@ exports.getUserOrders = async (req, res) => {
 exports.getOrderById = async (req, res) => {
   try {
     const order = await Order.findOne({
-      where: { id: req.params.id, customer_id: req.user.id },
-      include: [OrderItem]
-    });
+      _id: req.params.id,
+      customer_id: req.user.id
+    }).populate('items');
+
     if (!order) return res.status(404).json({ message: 'Order not found' });
     res.json(order);
   } catch (err) {
@@ -84,7 +81,7 @@ exports.getOrderById = async (req, res) => {
 exports.updateOrderStatus = async (req, res) => {
   try {
     const { status } = req.body;
-    await Order.update({ status }, { where: { id: req.params.id } });
+    await Order.findByIdAndUpdate(req.params.id, { status });
     res.json({ message: 'Order status updated' });
   } catch (err) {
     console.error(err);

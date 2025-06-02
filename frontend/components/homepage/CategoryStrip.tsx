@@ -4,9 +4,10 @@ import Link from 'next/link';
 import Image from 'next/image';
 
 type Category = {
-  id: number;
+  _id: string;
   name: string;
   slug: string;
+  thumbnail_url: string;
 };
 
 export default function CategoryStrip() {
@@ -27,12 +28,12 @@ export default function CategoryStrip() {
         <div className="flex gap-4">
           {categories.map((cat) => (
             <Link
-              key={cat.id}
+              key={cat._id}
               href={`/products?category=${cat.slug}`}
               className="flex-shrink-0 bg-white rounded-md shadow-sm p-3 w-36 text-center hover:shadow-lg transition"
             >
               <Image
-                src={`/categories/${cat.slug}.jpg`}
+                src={cat.thumbnail_url || '/image.jpg'}
                 alt={cat.name}
                 width={100}
                 height={80}

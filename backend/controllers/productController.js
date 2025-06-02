@@ -1,13 +1,29 @@
-const { Product, Category, Brand, MediaFile ,Review} = require('../models');
-const { Op } = require('sequelize');
+const Product = require('../models/product');
+const Category = require('../models/category');
+const Brand = require('../models/brand');
+const MediaFile = require('../models/mediafile');
+const Review = require('../models/review');
+const User = require('../models/user');
 const slugify = require('slugify');
 
+// CREATE PRODUCT
 exports.createProduct = async (req, res) => {
   try {
-    const { name, description, short_desc, price, stock_quantity, category_id, brand_id, meta_title, meta_description } = req.body;
+    const {
+      name,
+      description,
+      short_desc,
+      price,
+      stock_quantity,
+      category_id,
+      brand_id,
+      meta_title,
+      meta_description
+    } = req.body;
+
     const slug = slugify(name, { lower: true });
 
-    const product = await Product.create({
+    const product = new Product({
       name,
       slug,
       description,
@@ -19,38 +35,41 @@ exports.createProduct = async (req, res) => {
       meta_title,
       meta_description
     });
+    await product.save();
 
-    if (req.files) {
-      const media = req.files.map(file => ({
-        product_id: product.id,
-        file_url: `/uploads/${file.filename}`,
+    // Store media file URLs
+    if (req.files && req.files.length > 0) {
+      const mediaEntries = req.files.map(file => ({
+        product_id: product._id,
+        file_url: file.path, // Cloudinary URL
         file_type: file.mimetype
       }));
-      await MediaFile.bulkCreate(media);
+      await MediaFile.insertMany(mediaEntries);
     }
 
-    res.status(201).json({ message: 'Product created', product });
+    res.status(201).json({ message: 'Product created successfully', product });
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Error creating product' });
   }
 };
 
+// UPDATE PRODUCT
 exports.updateProduct = async (req, res) => {
   try {
     const id = req.params.id;
     const updates = req.body;
     if (updates.name) updates.slug = slugify(updates.name, { lower: true });
 
-    await Product.update(updates, { where: { id } });
+    await Product.findByIdAndUpdate(id, updates);
 
-    if (req.files) {
+    if (req.files && req.files.length > 0) {
       const media = req.files.map(file => ({
         product_id: id,
         file_url: `/uploads/${file.filename}`,
         file_type: file.mimetype
       }));
-      await MediaFile.bulkCreate(media);
+      await MediaFile.insertMany(media);
     }
 
     res.json({ message: 'Product updated' });
@@ -60,11 +79,12 @@ exports.updateProduct = async (req, res) => {
   }
 };
 
+// DELETE PRODUCT
 exports.deleteProduct = async (req, res) => {
   try {
     const id = req.params.id;
-    await Product.destroy({ where: { id } });
-    await MediaFile.destroy({ where: { product_id: id } });
+    await Product.findByIdAndDelete(id);
+    await MediaFile.deleteMany({ product_id: id });
     res.json({ message: 'Product deleted' });
   } catch (err) {
     console.error(err);
@@ -72,54 +92,62 @@ exports.deleteProduct = async (req, res) => {
   }
 };
 
+// GET ALL PRODUCTS
 exports.getAllProducts = async (req, res) => {
   try {
-    const products = await Product.findAll({
-      include: [
-        { model: Category },          
-        { model: Brand },
-        { model: MediaFile },
-      ],
-    });
-    res.json(products);
+    const products = await Product.find().lean();
+
+    const productIds = products.map(p => p._id);
+    const mediaFiles = await MediaFile.find({ product_id: { $in: productIds } }).lean();
+
+    const enrichedProducts = products.map(product => ({
+      ...product,
+      media_files: mediaFiles.filter(m => m.product_id.toString() === product._id.toString())
+    }));
+
+    res.json(enrichedProducts);
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Error fetching products' });
   }
 };
 
+
+// GET PRODUCT BY SLUG
 exports.getProductBySlug = async (req, res) => {
   try {
     const slug = req.params.slug;
 
-    const product = await Product.findOne({
-      where: { slug },
-      include: [Category, Brand, MediaFile],
-    });
+    const product = await Product.findOne({ slug })
+      .populate('category_id')
+      .populate('brand_id')
+      .lean();
 
     if (!product) return res.status(404).json({ message: 'Product not found' });
 
-    const reviews = await Review.findAll({
-      where: { product_id: product.id },
-      include: ['User'], 
-      order: [['createdAt', 'DESC']],
-    });
+    const media = await MediaFile.find({ product_id: product._id });
 
-    const related = await Product.findAll({
-      where: {
-        category_id: product.category_id,
-        slug: { [Op.ne]: slug },
-      },
-      attributes: ['id', 'name', 'slug', 'price'], 
-      include: [{ model: MediaFile }], 
-      limit: 4,
-    });
-    
+    const reviews = await Review.find({ product_id: product._id })
+      .populate({ path: 'customer_id', select: 'name email' })
+      .sort({ createdAt: -1 });
+
+    const related = await Product.find({
+      category_id: product.category_id,
+      slug: { $ne: slug }
+    }).limit(4).lean();
+
+    const relatedIds = related.map(r => r._id);
+    const relatedMedia = await MediaFile.find({ product_id: { $in: relatedIds } });
+
+    const relatedWithMedia = related.map(r => ({
+      ...r,
+      media_files: relatedMedia.filter(m => m.product_id.toString() === r._id.toString())
+    }));
 
     res.json({
-      product,
-      related,
-      reviews,
+      product: { ...product, media_files: media },
+      related: relatedWithMedia,
+      reviews
     });
   } catch (err) {
     console.error(err);
@@ -127,10 +155,55 @@ exports.getProductBySlug = async (req, res) => {
   }
 };
 
+// controller/productController.js
+exports.getProductById = async (req, res) => {
+  try {
+    const id = req.params.id;
 
+    const product = await Product.findById(id)
+      .populate('category_id')
+      .populate('brand_id')
+      .lean();
+
+    if (!product) return res.status(404).json({ message: 'Product not found' });
+
+    const media = await MediaFile.find({ product_id: id });
+
+    res.json({ ...product, MediaFiles: media });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Error fetching product' });
+  }
+};
+// GET PRODUCTS BY CATEGORY SLUG
+exports.getProductsByCategory = async (req, res) => {
+  try {
+    const { slug } = req.params;
+
+    const category = await Category.findOne({ slug }).lean();
+    if (!category) return res.status(404).json({ message: 'Category not found' });
+
+    const products = await Product.find({ category_id: category._id }).lean();
+
+    const productIds = products.map(p => p._id);
+    const mediaFiles = await MediaFile.find({ product_id: { $in: productIds } }).lean();
+
+    const enrichedProducts = products.map(product => ({
+      ...product,
+      media_files: mediaFiles.filter(m => m.product_id.toString() === product._id.toString())
+    }));
+
+    res.json(enrichedProducts);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Error fetching products by category' });
+  }
+};
+
+// GET ALL CATEGORIES
 exports.getCategories = async (req, res) => {
   try {
-    const categories = await Category.findAll();
+    const categories = await Category.find();
     res.json(categories);
   } catch (err) {
     console.error(err);
@@ -138,9 +211,10 @@ exports.getCategories = async (req, res) => {
   }
 };
 
+// GET ALL BRANDS
 exports.getBrands = async (req, res) => {
   try {
-    const brands = await Brand.findAll();
+    const brands = await Brand.find();
     res.json(brands);
   } catch (err) {
     console.error(err);

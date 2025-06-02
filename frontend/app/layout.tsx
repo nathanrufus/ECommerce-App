@@ -4,8 +4,10 @@ import { Inter, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { Toaster } from 'react-hot-toast';
 import { AuthProvider } from "@/context/AuthContext" 
+import Image from "next/image";
+import { FaWhatsapp } from "react-icons/fa";
 
-// ✅ Import your layout components
+
 import TopBar from "@/components/layout/TopBar";
 import Header from "@/components/layout/Header";
 import NavMenu from "@/components/layout/NavMenu";
@@ -39,22 +41,34 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${inter.variable} ${jetbrains.variable}`}>
       <body className="bg-background text-foreground antialiased font-sans">
-        {/* 🧱 Fixed layout block */}
+        <AuthProvider>
         <div className="fixed top-0 left-0 w-full z-50">
+          
           <TopBar />
           <Header />
           <NavMenu />
         </div>
-          <AuthProvider>
-
-        {/* 🧱 Push content down to avoid overlap */}
-          <main className="pt-32">
+                    <main className="pt-32">
           {children}
         </main>
 
           <Toaster position="top-right" />
+          {/* WhatsApp Floating Button */}
+          <a
+            href={`https://wa.me/${process.env.NEXT_PUBLIC_WHATSAPP_NUMBER}?text=${encodeURIComponent(
+              "Hi! I need help with a product on Kwalas Tech."
+            )}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="fixed bottom-6 right-6 bg-green-500 hover:bg-green-600 text-white p-3 rounded-full shadow-lg z-50 transition"
+            aria-label="Chat with us on WhatsApp"
+          >     
+          < FaWhatsapp className="w-6 h-6" />
+          </a>
+
           <Footer />
         </AuthProvider>
+           
       </body>
     </html>
   );

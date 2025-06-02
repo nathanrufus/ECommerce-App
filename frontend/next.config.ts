@@ -2,7 +2,7 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   images: {
-    domains: ["via.placeholder.com", "localhost"], 
+    domains: ["via.placeholder.com", "localhost", 'res.cloudinary.com'], 
   },
   async rewrites() {
     return [

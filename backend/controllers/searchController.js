@@ -1,29 +1,37 @@
-const { Product, Category, Brand, ProductTag, Sequelize } = require('../models');
-const { Op } = Sequelize;
-const redis = require('../utils/redis'); 
+const Product = require('../models/product');
+const Category = require('../models/category');
+const Brand = require('../models/brand');
+const ProductTag = require('../models/producttag');
+const redis = require('../utils/redis');
 
+// ------------------------------
+// SEARCH PRODUCTS
+// ------------------------------
 exports.searchProducts = async (req, res) => {
   try {
-    const q = req.query.q;
-    const cacheKey = `search:q=${q}`;
+    const q = req.query.q?.trim();
+    if (!q) return res.status(400).json({ message: 'Query (q) is required' });
 
+    const cacheKey = `search:q=${q}`;
     const cached = await redis.get(cacheKey);
     if (cached) return res.json(JSON.parse(cached));
 
-    const results = await Product.findAll({
-      where: {
-        [Op.or]: [
-          { name: { [Op.iLike]: `%${q}%` } },
-          { description: { [Op.iLike]: `%${q}%` } },
-          { short_desc: { [Op.iLike]: `%${q}%` } },
-          { meta_title: { [Op.iLike]: `%${q}%` } },
-          { meta_description: { [Op.iLike]: `%${q}%` } }
-        ]
-      },
-      include: [Category, Brand]
-    });
+    // Case-insensitive $regex search
+    const regex = new RegExp(q, 'i');
+    const results = await Product.find({
+      $or: [
+        { name: regex },
+        { description: regex },
+        { short_desc: regex },
+        { meta_title: regex },
+        { meta_description: regex }
+      ]
+    })
+      .populate('category_id')
+      .populate('brand_id')
+      .lean();
 
-    await redis.set(cacheKey, JSON.stringify(results), 'EX', 300); // cache for 5 mins
+    await redis.set(cacheKey, JSON.stringify(results), 'EX', 300); // 5 mins
     res.json(results);
   } catch (err) {
     console.error(err);
@@ -31,40 +39,48 @@ exports.searchProducts = async (req, res) => {
   }
 };
 
+// ------------------------------
+// FILTER PRODUCTS
+// ------------------------------
 exports.filterProducts = async (req, res) => {
   try {
     const cacheKey = `filter:${JSON.stringify(req.query)}`;
-
     const cached = await redis.get(cacheKey);
     if (cached) return res.json(JSON.parse(cached));
 
     const { category, brand, minPrice, maxPrice, tag } = req.query;
-    const where = {};
+    const filter = {};
 
-    if (category) where.category_id = category;
-    if (brand) where.brand_id = brand;
+    if (category) filter.category_id = category;
+    if (brand) filter.brand_id = brand;
     if (minPrice || maxPrice) {
-      where.price = {};
-      if (minPrice) where.price[Op.gte] = parseFloat(minPrice);
-      if (maxPrice) where.price[Op.lte] = parseFloat(maxPrice);
+      filter.price = {};
+      if (minPrice) filter.price.$gte = parseFloat(minPrice);
+      if (maxPrice) filter.price.$lte = parseFloat(maxPrice);
     }
 
-    const include = [Category, Brand];
+    let products;
 
     if (tag) {
-      include.push({
-        model: ProductTag,
-        where: { slug: tag },
-        through: { attributes: [] }
-      });
+      // Join on tags using manual lookup
+      const tagDoc = await ProductTag.findOne({ slug: tag });
+      if (!tagDoc) return res.json([]); // no products if tag doesn't exist
+
+      products = await Product.find({
+        ...filter,
+        tags: tagDoc._id
+      })
+        .populate('category_id')
+        .populate('brand_id')
+        .lean();
+    } else {
+      products = await Product.find(filter)
+        .populate('category_id')
+        .populate('brand_id')
+        .lean();
     }
 
-    const products = await Product.findAll({
-      where,
-      include
-    });
-
-    await redis.set(cacheKey, JSON.stringify(products), 'EX', 300); // cache for 5 mins
+    await redis.set(cacheKey, JSON.stringify(products), 'EX', 300);
     res.json(products);
   } catch (err) {
     console.error(err);

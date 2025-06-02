@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 
 type CartItem = {
-    id: number;
+    id: string;
     name: string;
     price: number;
     quantity: number;
@@ -11,8 +11,8 @@ type CartItem = {
     cartItems: CartItem[];
     subtotal: number;
     addToCart: (item: CartItem) => void;
-    updateQuantity: (id: number, quantity: number) => void;
-    removeItem: (id: number) => void;
+    updateQuantity: (id: string, quantity: number) => void;
+    removeItem: (id: string) => void;
     loadFromStorage: () => void;
   };
   
@@ -31,7 +31,9 @@ type CartItem = {
           )
         : [...get().cartItems, item];
   
-      localStorage.setItem('cart', JSON.stringify(updatedCart));
+if (typeof window !== 'undefined') {
+  localStorage.setItem('cart', JSON.stringify(updatedCart));
+}
       set({ cartItems: updatedCart, subtotal: calculateSubtotal(updatedCart) });
     },
   

@@ -34,7 +34,7 @@ export default function BrandForm() {
   };
 
   return (
-    <div className="max-w-md mx-auto p-4 bg-white shadow-md rounded-2xl">
+    <div className="max-w-md mx-auto p-4 bg-white shadow-md rounded-2xl mt-10 h-screen">
       <h2 className="text-2xl font-semibold text-gray-800 mb-4">Add New Brand</h2>
       <form onSubmit={handleSubmit} className="space-y-4">
         <input

@@ -9,7 +9,7 @@ import CategoryStrip from '@/components/homepage/CategoryStrip';
 
 
 type Category = {
-  id: number;
+  _id: string;
   name: string;
   slug: string;
 };
@@ -27,11 +27,9 @@ export default function HomePage() {
     <main className="min-h-screen bg-white text-black">
       
       <HeroBanner />
-            <CategoryStrip />
-
-
+      <CategoryStrip />
       {categories.map((cat) => (
-        <CategorySection key={cat.id} category={cat} />
+       <CategorySection key={cat._id} category={cat} />
       ))}
       <InfoStrip />
       <NewsletterSignup />

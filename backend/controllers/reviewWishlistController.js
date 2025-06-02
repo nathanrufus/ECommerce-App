@@ -1,6 +1,11 @@
-const { Review, Wishlist, Product } = require('../models');
+const Review = require('../models/review');
+const Wishlist = require('../models/wishlist');
+const Product = require('../models/product');
 
-//  REVIEWS
+// =======================
+// REVIEWS
+// =======================
+
 exports.createReview = async (req, res) => {
   try {
     const { product_id, rating, comment } = req.body;
@@ -15,22 +20,22 @@ exports.createReview = async (req, res) => {
 
     // Optional: prevent duplicate reviews
     const existing = await Review.findOne({
-      where: {
-        product_id,
-        customer_id: req.user.id
-      }
-    })
+      product_id,
+      customer_id: req.user.id
+    });
 
     if (existing) {
       return res.status(400).json({ message: "You have already reviewed this product" });
     }
 
-    const review = await Review.create({
+    const review = new Review({
       product_id,
       customer_id: req.user.id,
       rating,
       comment
     });
+
+    await review.save();
 
     res.status(201).json({ message: 'Review submitted', review });
   } catch (err) {
@@ -41,7 +46,10 @@ exports.createReview = async (req, res) => {
 
 exports.getReviewsForProduct = async (req, res) => {
   try {
-    const reviews = await Review.findAll({ where: { product_id: req.params.id } });
+    const reviews = await Review.find({ product_id: req.params.id })
+      .populate({ path: 'customer_id', select: 'name email' })
+      .sort({ createdAt: -1 });
+
     res.json(reviews);
   } catch (err) {
     console.error(err);
@@ -49,19 +57,30 @@ exports.getReviewsForProduct = async (req, res) => {
   }
 };
 
-// ✅ WISHLIST
+// =======================
+// WISHLIST
+// =======================
+
 exports.addToWishlist = async (req, res) => {
   try {
     const { product_id } = req.body;
-    const exists = await Wishlist.findOne({
-      where: { customer_id: req.user.id, product_id }
-    });
-    if (exists) return res.status(400).json({ message: 'Product already in wishlist' });
 
-    const wishlist = await Wishlist.create({
+    const exists = await Wishlist.findOne({
       customer_id: req.user.id,
       product_id
     });
+
+    if (exists) {
+      return res.status(400).json({ message: 'Product already in wishlist' });
+    }
+
+    const wishlist = new Wishlist({
+      customer_id: req.user.id,
+      product_id
+    });
+
+    await wishlist.save();
+
     res.status(201).json({ message: 'Added to wishlist', wishlist });
   } catch (err) {
     console.error(err);
@@ -71,10 +90,12 @@ exports.addToWishlist = async (req, res) => {
 
 exports.getWishlist = async (req, res) => {
   try {
-    const wishlist = await Wishlist.findAll({
-      where: { customer_id: req.user.id },
-      include: [Product]
-    });
+    const wishlist = await Wishlist.find({ customer_id: req.user.id })
+      .populate({
+        path: 'product_id',
+        populate: [{ path: 'brand_id' }, { path: 'category_id' }]
+      });
+
     res.json(wishlist);
   } catch (err) {
     console.error(err);
@@ -85,7 +106,12 @@ exports.getWishlist = async (req, res) => {
 exports.removeFromWishlist = async (req, res) => {
   try {
     const { product_id } = req.params;
-    await Wishlist.destroy({ where: { customer_id: req.user.id, product_id } });
+
+    await Wishlist.deleteOne({
+      customer_id: req.user.id,
+      product_id
+    });
+
     res.json({ message: 'Removed from wishlist' });
   } catch (err) {
     console.error(err);

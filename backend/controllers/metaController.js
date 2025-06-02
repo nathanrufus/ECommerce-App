@@ -1,11 +1,18 @@
-const { Category, Brand, ProductTag } = require('../models');
+const Category = require('../models/category');
+const Brand = require('../models/brand');
+const ProductTag = require('../models/producttag');
 const slugify = require('slugify');
+
+// ----------------------------
+// CREATE CONTROLLERS
+// ----------------------------
 
 exports.createCategory = async (req, res) => {
   try {
     const { name, parent_id } = req.body;
     const slug = slugify(name, { lower: true });
-    const category = await Category.create({ name, slug, parent_id });
+    const category = new Category({ name, slug, parent_id });
+    await category.save();
     res.status(201).json({ category });
   } catch (err) {
     console.error(err);
@@ -17,7 +24,8 @@ exports.createBrand = async (req, res) => {
   try {
     const { name } = req.body;
     const slug = slugify(name, { lower: true });
-    const brand = await Brand.create({ name, slug });
+    const brand = new Brand({ name, slug });
+    await brand.save();
     res.status(201).json({ brand });
   } catch (err) {
     console.error(err);
@@ -29,7 +37,8 @@ exports.createTag = async (req, res) => {
   try {
     const { name } = req.body;
     const slug = slugify(name, { lower: true });
-    const tag = await ProductTag.create({ name, slug });
+    const tag = new ProductTag({ name, slug });
+    await tag.save();
     res.status(201).json({ tag });
   } catch (err) {
     console.error(err);
@@ -37,9 +46,13 @@ exports.createTag = async (req, res) => {
   }
 };
 
+// ----------------------------
+// FETCH CONTROLLERS
+// ----------------------------
+
 exports.getCategories = async (req, res) => {
   try {
-    const categories = await Category.findAll();
+    const categories = await Category.find();
     res.json(categories);
   } catch (err) {
     console.error(err);
@@ -49,7 +62,7 @@ exports.getCategories = async (req, res) => {
 
 exports.getBrands = async (req, res) => {
   try {
-    const brands = await Brand.findAll();
+    const brands = await Brand.find();
     res.json(brands);
   } catch (err) {
     console.error(err);
@@ -59,17 +72,22 @@ exports.getBrands = async (req, res) => {
 
 exports.getTags = async (req, res) => {
   try {
-    const tags = await ProductTag.findAll();
+    const tags = await ProductTag.find();
     res.json(tags);
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Error fetching tags' });
   }
 };
+
+// ----------------------------
+// DELETE CONTROLLERS
+// ----------------------------
+
 exports.deleteCategory = async (req, res) => {
   try {
     const { id } = req.params;
-    await Category.destroy({ where: { id } });
+    await Category.findByIdAndDelete(id);
     res.json({ message: 'Category deleted successfully' });
   } catch (err) {
     console.error(err);
@@ -80,11 +98,10 @@ exports.deleteCategory = async (req, res) => {
 exports.deleteBrand = async (req, res) => {
   try {
     const { id } = req.params;
-    await Brand.destroy({ where: { id } });
+    await Brand.findByIdAndDelete(id);
     res.json({ message: 'Brand deleted successfully' });
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Error deleting brand' });
   }
 };
-

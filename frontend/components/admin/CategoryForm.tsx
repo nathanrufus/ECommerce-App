@@ -4,10 +4,25 @@ import { useAuth } from '@/context/AuthContext';
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL;
 
+type Category = {
+  _id: string;
+  name: string;
+};
+
+function slugify(str: string): string {
+  return str
+    .toLowerCase()
+    .trim()
+    .replace(/[^\w\s-]/g, '')
+    .replace(/\s+/g, '-');
+}
+
 export default function CategoryForm() {
   const [name, setName] = useState('');
+  const [slug, setSlug] = useState('');
   const [parentId, setParentId] = useState('');
-  const [categories, setCategories] = useState([]);
+  const [thumbnailUrl, setThumbnailUrl] = useState('');
+  const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const { token } = useAuth();
@@ -15,8 +30,13 @@ export default function CategoryForm() {
   useEffect(() => {
     fetch(`${API_BASE}/categories`)
       .then((res) => res.json())
-      .then((data) => setCategories(data));
+      .then((data) => setCategories(data.categories || data));
   }, []);
+
+  useEffect(() => {
+    // Auto-generate slug when name changes
+    setSlug(slugify(name));
+  }, [name]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -28,24 +48,54 @@ export default function CategoryForm() {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ name, parent_id: parentId || null }),
+        body: JSON.stringify({
+          name,
+          slug,
+          thumbnail_url: thumbnailUrl || null,
+          parent_id: parentId || null,
+        }),
       });
+
       if (res.ok) {
         setSuccess(true);
         setName('');
+        setSlug('');
         setParentId('');
+        setThumbnailUrl('');
       }
     } catch (err) {
-      console.error(err);
+      console.error('Error creating category:', err);
     } finally {
       setLoading(false);
     }
   };
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const file = e.target.files?.[0];
+  if (!file) return;
+
+  const formData = new FormData();
+  formData.append('file', file);
+  formData.append('upload_preset', 'your_unsigned_preset'); // replace with your Cloudinary preset
+
+  try {
+    const res = await fetch('https://api.cloudinary.com/v1_1/your_cloud_name/image/upload', {
+      method: 'POST',
+      body: formData,
+    });
+
+    const data = await res.json();
+    setThumbnailUrl(data.secure_url);
+  } catch (err) {
+    console.error('Image upload failed:', err);
+  }
+};
+
 
   return (
-    <div className="max-w-md mx-auto p-4 bg-white shadow-md rounded-2xl">
+    <div className="max-w-md mx-auto p-4 bg-white shadow-md rounded-2xl mt-10 h-screen">
       <h2 className="text-2xl font-semibold text-gray-800 mb-4">Add New Category</h2>
       <form onSubmit={handleSubmit} className="space-y-4">
+        {/* Name */}
         <input
           type="text"
           placeholder="Category name"
@@ -54,18 +104,49 @@ export default function CategoryForm() {
           onChange={(e) => setName(e.target.value)}
           required
         />
+
+        {/* Slug (auto-generated) */}
+        <input
+          type="text"
+          placeholder="Slug"
+          className="w-full p-2 border rounded-xl bg-gray-100"
+          value={slug}
+          readOnly
+        />
+
+       {/* Thumbnail Upload */}
+          <input
+            type="file"
+            accept="image/*"
+            className="w-full p-2 border rounded-xl"
+            onChange={handleFileUpload}
+          />
+
+          {/* Preview (optional) */}
+          {thumbnailUrl && (
+            <img
+              src={thumbnailUrl}
+              alt="Thumbnail Preview"
+              className="w-full h-32 object-cover rounded-md mt-2"
+            />
+          )}
+
+
+        {/* Parent Category */}
         <select
           value={parentId}
           onChange={(e) => setParentId(e.target.value)}
           className="w-full p-2 border rounded-xl"
         >
           <option value="">No parent</option>
-          {categories.map((cat: any) => (
-            <option key={cat.id} value={cat.id}>
+          {categories.map((cat) => (
+            <option key={cat._id} value={cat._id}>
               {cat.name}
             </option>
           ))}
         </select>
+
+        {/* Submit Button */}
         <button
           type="submit"
           className="bg-blue-600 text-white px-4 py-2 rounded-xl hover:bg-blue-700 disabled:opacity-50"
@@ -73,6 +154,7 @@ export default function CategoryForm() {
         >
           {loading ? 'Saving...' : 'Save Category'}
         </button>
+
         {success && <p className="text-green-600">Category created successfully!</p>}
       </form>
     </div>

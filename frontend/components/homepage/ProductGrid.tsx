@@ -1,10 +1,9 @@
-// components/homepage/ProductGrid.tsx
 'use client';
 import React, { useEffect, useState } from 'react';
-import ProductCard from "@/components/ui/ProductCard"
+import ProductCard from "@/components/ui/ProductCard";
 
 type Product = {
-  id: number;
+  _id: string;
   name: string;
   slug: string;
   price: number;
@@ -17,7 +16,7 @@ export default function ProductGrid() {
   useEffect(() => {
     fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/products`)
       .then(res => res.json())
-      .then(data => setProducts(data.slice(0, 8)));
+      .then(data => setProducts(data.slice(0, 8))); 
   }, []);
 
   return (
@@ -26,7 +25,7 @@ export default function ProductGrid() {
         <h2 className="text-2xl font-semibold text-black mb-6 text-center">Featured Products</h2>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
           {products.map(product => (
-            <ProductCard key={product.id} product={product} />
+            <ProductCard key={product._id} product={product} />
           ))}
         </div>
       </div>

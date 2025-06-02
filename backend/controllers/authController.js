@@ -1,14 +1,15 @@
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
-const { User } = require('../models');
+const User = require('../models/user'); // ✅ Mongoose model import
 require('dotenv').config();
 
+// REGISTER
 exports.register = async (req, res) => {
   try {
     const { name, email, password } = req.body;
 
     // Check if user already exists
-    const existingUser = await User.findOne({ where: { email } });
+    const existingUser = await User.findOne({ email });
     if (existingUser) {
       return res.status(400).json({ message: 'Email already registered' });
     }
@@ -17,16 +18,17 @@ exports.register = async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, 10);
 
     // Create user
-    const newUser = await User.create({
+    const newUser = new User({
       name,
       email,
       password: hashedPassword,
       role: 'customer'
     });
+    await newUser.save();
 
     // Generate token
     const token = jwt.sign(
-      { id: newUser.id, role: newUser.role },
+      { id: newUser._id, role: newUser.role },
       process.env.JWT_SECRET,
       { expiresIn: process.env.JWT_EXPIRES_IN || '1d' }
     );
@@ -34,7 +36,12 @@ exports.register = async (req, res) => {
     res.status(201).json({
       message: 'Registration successful',
       token,
-      user: { id: newUser.id, name: newUser.name, email: newUser.email, role: newUser.role }
+      user: {
+        id: newUser._id,
+        name: newUser.name,
+        email: newUser.email,
+        role: newUser.role
+      }
     });
   } catch (err) {
     console.error(err);
@@ -42,12 +49,13 @@ exports.register = async (req, res) => {
   }
 };
 
+// LOGIN
 exports.login = async (req, res) => {
   try {
     const { email, password } = req.body;
 
     // Find user
-    const user = await User.findOne({ where: { email } });
+    const user = await User.findOne({ email });
     if (!user) return res.status(400).json({ message: 'Invalid credentials' });
 
     // Compare password
@@ -56,7 +64,7 @@ exports.login = async (req, res) => {
 
     // Generate token
     const token = jwt.sign(
-      { id: user.id, role: user.role },
+      { id: user._id, role: user.role },
       process.env.JWT_SECRET,
       { expiresIn: process.env.JWT_EXPIRES_IN || '1d' }
     );
@@ -64,7 +72,12 @@ exports.login = async (req, res) => {
     res.json({
       message: 'Login successful',
       token,
-      user: { id: user.id, name: user.name, email: user.email, role: user.role }
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role
+      }
     });
   } catch (err) {
     console.error(err);

@@ -7,13 +7,14 @@ import { useAuth } from "@/context/AuthContext"
 import { useRouter } from "next/navigation"
 
 type Product = {
-  id: number
+  _id: string
   name: string
   slug: string
   price: number
   stock_quantity: number
   media_files?: { file_url: string }[]
 }
+
 
 export default function AdminProductsPage() {
   const [products, setProducts] = useState<Product[]>([])
@@ -42,13 +43,14 @@ export default function AdminProductsPage() {
     fetchProducts()
   }, [loading, isAdmin])
 
-  const handleDelete = (id: number) => {
-    setProducts((prev) => prev.filter((p) => p.id !== id))
-  }
+ const handleDelete = (_id: string) => {
+  setProducts((prev) => prev.filter((p) => p._id !== _id))
+}
+
 
   return (
-    <div className="p-6 mt-20 max-w-7xl mx-auto">
-      <div className="flex justify-between items-center mb-6">
+    <div className="p-6 mt-20 max-w-7xl mx-auto min-h-screen">
+      <div className="flex justify-between items-center mb-6 ">
         <h1 className="text-2xl font-bold text-[#1B1D30]">Available Products</h1>
         <Link
           href="/admin/products/new"
@@ -59,7 +61,7 @@ export default function AdminProductsPage() {
       </div>
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
         {products.map((product) => (
-          <ProductCard key={product.id} product={product} onDelete={handleDelete} />
+         <ProductCard key={product._id} product={product} onDelete={handleDelete} />
         ))}
       </div>
     </div>

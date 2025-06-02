@@ -4,13 +4,12 @@ import Link from 'next/link';
 import ProductCard from '@/components/ui/ProductCard';
 
 type Category = {
-  id: number;
   name: string;
   slug: string;
 };
 
 type Product = {
-  id: number;
+  _id: string;
   name: string;
   slug: string;
   price: number;
@@ -23,7 +22,7 @@ export default function CategorySection({ category }: { category: Category }) {
   useEffect(() => {
     fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/products?category=${category.slug}`)
       .then(res => res.json())
-      .then(data => setProducts(data.slice(0, 4)));
+      .then(data => setProducts(data.slice(0, 11)));
   }, [category.slug]);
 
   return (
@@ -40,7 +39,7 @@ export default function CategorySection({ category }: { category: Category }) {
         </div>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
           {products.map(product => (
-            <ProductCard key={product.id} product={product} />
+            <ProductCard key={product._id} product={product} />
           ))}
         </div>
       </div>

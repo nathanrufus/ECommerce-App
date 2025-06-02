@@ -4,10 +4,11 @@ import Link from 'next/link';
 import { FiMenu } from 'react-icons/fi';
 
 type Category = {
-  id: number;
+  _id: string;
   name: string;
   slug: string;
 };
+
 
 export default function NavMenu() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -27,12 +28,12 @@ export default function NavMenu() {
         <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between md:justify-start gap-6">
           {/* 🔘 Sidebar Toggle */}
          <button
-  onClick={() => setSidebarOpen(true)}
-  className="flex items-center gap-2 px-3 py-1.5 border border-gray-300 rounded-md bg-white text-gray-800 hover:border-green-600 hover:text-green-600 transition font-medium shadow-sm"
->
-  <FiMenu className="w-5 h-5" />
-  <span className="hidden sm:inline">Browse Categories</span>
-</button>
+          onClick={() => setSidebarOpen(true)}
+          className="flex items-center gap-2 px-3 py-1.5 border border-gray-300 rounded-md bg-white text-gray-800 hover:border-green-600 hover:text-green-600 transition font-medium shadow-sm"
+        >
+          <FiMenu className="w-5 h-5" />
+          <span className="hidden sm:inline">Browse Categories</span>
+        </button>
 
 
           {/* 🔗 Navigation Links */}
@@ -79,21 +80,22 @@ export default function NavMenu() {
   </div>
 
   <ul className="p-4 space-y-3 text-sm">
-    {categories.length > 0 ? (
-      categories.map((cat) => (
-        <li key={cat.id}>
-          <Link
-            href={`/products?category=${cat.slug}`}
-            onClick={closeSidebar}
-            className="block px-3 py-2 rounded-md text-gray-800 hover:bg-green-100 hover:text-green-700 font-medium transition"
-          >
-            {cat.name}
-          </Link>
-        </li>
-      ))
-    ) : (
-      <li className="text-gray-400 italic">No categories available</li>
-    )}
+   {categories.length > 0 ? (
+  categories.map((cat) => (
+    <li key={cat._id}>
+      <Link
+        href={`/products?category=${cat.slug}`}
+        onClick={closeSidebar}
+        className="block px-3 py-2 rounded-md text-gray-800 hover:bg-green-100 hover:text-green-700 font-medium transition"
+      >
+        {cat.name}
+      </Link>
+    </li>
+  ))
+) : (
+  <li className="text-gray-400 italic">No categories available</li>
+)}
+
   </ul>
 </aside>
 

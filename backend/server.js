@@ -1,15 +1,11 @@
-// server.js
 const app = require('./app');
-const { sequelize } = require('./models'); // Adjust if using Sequelize default export
+const connectDB = require('./config/db'); // MongoDB connection function
 
 const PORT = process.env.PORT || 5000;
 
 (async () => {
   try {
-    await sequelize.authenticate(); // Test DB connection
-    console.log(' Connected to PostgreSQL database.');
-
-    await sequelize.sync(); // Optional: sync models
+    await connectDB(); // Connect to MongoDB Atlas
     app.listen(PORT, () => {
       console.log(`🚀 Server running on http://localhost:${PORT}`);
     });
