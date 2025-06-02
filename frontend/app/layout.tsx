@@ -1,12 +1,15 @@
+// app/layout.tsx
 import type { Metadata } from "next";
 import { Inter, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { Toaster } from 'react-hot-toast';
 import { AuthProvider } from "@/context/AuthContext" 
 
-// Import Navbar and Footer
-import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
+// ✅ Import your layout components
+import TopBar from "@/components/layout/TopBar";
+import Header from "@/components/layout/Header";
+import NavMenu from "@/components/layout/NavMenu";
+import Footer from "@/components/layout/Footer";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -36,9 +39,19 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${inter.variable} ${jetbrains.variable}`}>
       <body className="bg-background text-foreground antialiased font-sans">
-        <AuthProvider>
-          <Navbar />
-          <main>{children}</main>
+        {/* 🧱 Fixed layout block */}
+        <div className="fixed top-0 left-0 w-full z-50">
+          <TopBar />
+          <Header />
+          <NavMenu />
+        </div>
+          <AuthProvider>
+
+        {/* 🧱 Push content down to avoid overlap */}
+          <main className="pt-32">
+          {children}
+        </main>
+
           <Toaster position="top-right" />
           <Footer />
         </AuthProvider>
@@ -46,3 +59,4 @@ export default function RootLayout({
     </html>
   );
 }
+
