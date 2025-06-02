@@ -1,0 +1,67 @@
+"use client"
+
+import { useEffect, useState } from "react"
+import Link from "next/link"
+import ProductCard from "@/components/admin/ProductCard"
+import { useAuth } from "@/context/AuthContext"
+import { useRouter } from "next/navigation"
+
+type Product = {
+  id: number
+  name: string
+  slug: string
+  price: number
+  stock_quantity: number
+  media_files?: { file_url: string }[]
+}
+
+export default function AdminProductsPage() {
+  const [products, setProducts] = useState<Product[]>([])
+  const { user, token, isAdmin ,loading} = useAuth()
+  const router = useRouter()
+
+  useEffect(() => {
+    if (!loading && !isAdmin) {
+        router.push("/")
+      }
+
+    const fetchProducts = async () => {
+      try {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/products`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        })
+        const data = await res.json()
+        setProducts(data.products || data) 
+      } catch (err) {
+        console.error("Failed to fetch products", err)
+      }
+    }
+
+    fetchProducts()
+  }, [loading, isAdmin])
+
+  const handleDelete = (id: number) => {
+    setProducts((prev) => prev.filter((p) => p.id !== id))
+  }
+
+  return (
+    <div className="p-6 mt-20 max-w-7xl mx-auto">
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-2xl font-bold text-[#1B1D30]">Available Products</h1>
+        <Link
+          href="/admin/products/new"
+          className="px-4 py-2 bg-black text-white rounded-md hover:bg-[#70B244]"
+        >
+          + Add Product
+        </Link>
+      </div>
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+        {products.map((product) => (
+          <ProductCard key={product.id} product={product} onDelete={handleDelete} />
+        ))}
+      </div>
+    </div>
+  )
+}

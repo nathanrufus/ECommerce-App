@@ -4,12 +4,34 @@ const { Review, Wishlist, Product } = require('../models');
 exports.createReview = async (req, res) => {
   try {
     const { product_id, rating, comment } = req.body;
+
+    if (!product_id || !rating || !comment) {
+      return res.status(400).json({ message: "All fields are required" });
+    }
+
+    if (rating < 1 || rating > 5) {
+      return res.status(400).json({ message: "Rating must be between 1 and 5" });
+    }
+
+    // Optional: prevent duplicate reviews
+    const existing = await Review.findOne({
+      where: {
+        product_id,
+        customer_id: req.user.id
+      }
+    })
+
+    if (existing) {
+      return res.status(400).json({ message: "You have already reviewed this product" });
+    }
+
     const review = await Review.create({
       product_id,
       customer_id: req.user.id,
       rating,
       comment
     });
+
     res.status(201).json({ message: 'Review submitted', review });
   } catch (err) {
     console.error(err);

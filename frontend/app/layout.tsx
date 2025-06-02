@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { Toaster } from 'react-hot-toast';
+import { AuthProvider } from "@/context/AuthContext" 
 
 // Import Navbar and Footer
 import Navbar from "@/components/Navbar";
@@ -35,12 +36,12 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${inter.variable} ${jetbrains.variable}`}>
       <body className="bg-background text-foreground antialiased font-sans">
-        <Navbar />
-        <main>
-          {children}
+        <AuthProvider>
+          <Navbar />
+          <main>{children}</main>
           <Toaster position="top-right" />
-        </main>
-        <Footer />
+          <Footer />
+        </AuthProvider>
       </body>
     </html>
   );

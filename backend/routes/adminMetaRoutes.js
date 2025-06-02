@@ -8,6 +8,10 @@ const roleMiddleware = require('../middleware/roleMiddleware');
 router.post('/categories', authMiddleware, roleMiddleware('admin'), controller.createCategory);
 router.post('/brands', authMiddleware, roleMiddleware('admin'), controller.createBrand);
 router.post('/tags', authMiddleware, roleMiddleware('admin'), controller.createTag);
+// Admin-only delete routes
+router.delete('/categories/:id', authMiddleware, roleMiddleware('admin'), controller.deleteCategory);
+router.delete('/brands/:id', authMiddleware, roleMiddleware('admin'), controller.deleteBrand);
+
 
 // Public fetch routes
 router.get('/categories', controller.getCategories);

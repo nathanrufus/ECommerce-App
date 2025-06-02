@@ -12,7 +12,7 @@ type Product = {
 };
 
 export default function ProductCard({ product }: { product: Product }) {
-  const imageUrl = product.media_files?.[0]?.file_url || "/placeholder.png";
+  const imageUrl = product.media_files?.[0]?.file_url || "/image.webp";
 
   return (
     <Link

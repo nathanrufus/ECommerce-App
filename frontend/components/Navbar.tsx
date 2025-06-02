@@ -1,12 +1,23 @@
-"use client";
+"use client"
 
-import Link from "next/link";
-import { useState } from "react";
-import { Menu, X } from "lucide-react";
-import Image from "next/image";
+import Link from "next/link"
+import { useState } from "react"
+import { Menu, X } from "lucide-react"
+import Image from "next/image"
+import { useRouter } from "next/navigation"
+import { useAuth } from "@/context/AuthContext"
+import { toast } from "react-hot-toast"
 
 export default function Navbar() {
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(false)
+  const { user, logout } = useAuth()
+  const router = useRouter()
+
+  const handleLogout = () => {
+    logout()
+    toast.success("Logged out")
+    router.push("/login")
+  }
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-[#70B244] text-white px-6 py-4 shadow-md backdrop-blur-sm">
@@ -28,7 +39,24 @@ export default function Navbar() {
           <Link href="/products" className="hover:underline">Shop</Link>
           <Link href="/explore" className="hover:underline">Explore</Link>
           <Link href="/cart" className="hover:underline">Cart</Link>
-          <Link href="/login" className="hover:bg-white hover:text-[#70B244] px-3 py-1 rounded transition">Login</Link>
+
+          {user ? (
+            <>
+              <button
+                onClick={handleLogout}
+                className="hover:bg-white hover:text-[#70B244] px-3 py-1 rounded transition"
+              >
+                Logout
+              </button>
+            </>
+          ) : (
+            <Link
+              href="/login"
+              className="hover:bg-white hover:text-[#70B244] px-3 py-1 rounded transition"
+            >
+              Login
+            </Link>
+          )}
         </div>
 
         {/* Mobile Menu Toggle */}
@@ -42,10 +70,27 @@ export default function Navbar() {
             <Link href="/products" className="px-6 py-2 hover:bg-white/10">Shop</Link>
             <Link href="/explore" className="px-6 py-2 hover:bg-white/10">Explore</Link>
             <Link href="/cart" className="px-6 py-2 hover:bg-white/10">Cart</Link>
-            <Link href="/login" className="px-6 py-2 hover:bg-white text-[#70B244] bg-white rounded-md mx-6 text-center">Login</Link>
+
+            {user ? (
+              <>
+                <button
+                  onClick={handleLogout}
+                  className="px-6 py-2 hover:bg-white/10 text-left w-full"
+                >
+                  Logout
+                </button>
+              </>
+            ) : (
+              <Link
+                href="/login"
+                className="px-6 py-2 hover:bg-white text-[#70B244] bg-white rounded-md mx-6 text-center"
+              >
+                Login
+              </Link>
+            )}
           </div>
         )}
       </div>
     </nav>
-  );
+  )
 }

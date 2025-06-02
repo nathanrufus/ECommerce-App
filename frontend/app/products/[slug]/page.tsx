@@ -68,22 +68,32 @@ export default function ProductDetailsPage() {
 
 		fetchData()
 	}, [slug])
-	const handleAddToCart = () => {
+	const handleAddToCart = (e: React.MouseEvent<HTMLButtonElement>) => {
+		e.preventDefault()
+
 		if (!product) return
 
 		addToCart({
-			id: parseInt(product.id),
+			id: Number(product.id),
 			name: product.name,
 			price: product.price,
 			quantity,
 		})
+		console.log("Product added", {
+			id: Number(product.id),
+			name: product.name,
+			price: product.price,
+			quantity,
+		  })
+		  
+		console.log("Adding to cart:", product.id, quantity)
 
 		toast.success("Added to cart")
 	}
 
 	if (!product)
 		return (
-			<div className="text-center py-20">
+			<div className="text-center py-20 h-screen mt-40">
 				Loading product...
 			</div>
 		)
@@ -174,6 +184,7 @@ export default function ProductDetailsPage() {
 						disabled={
 							product.stock_quantity < 1
 						}
+						type="button"
 						className="mt-4 px-6 py-2 rounded-md bg-[#1B1D30] hover:bg-[#70B244] text-white transition disabled:opacity-50"
 					>
 						Add to Cart

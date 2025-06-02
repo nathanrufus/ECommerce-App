@@ -15,23 +15,39 @@ export default function ReviewForm({ productId, onSuccess }: ReviewFormProps) {
 
   const handleSubmit = async () => {
     try {
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_BASE_URL}/products/${productId}/reviews`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ name, comment, rating }),
-        }
-      )
-      if (!res.ok) throw new Error("Failed to submit review")
+      const token = localStorage.getItem("token")
+      if (!token) {
+        toast.error("You must be logged in to leave a review")
+        return
+      }
+
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/reviews`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          name,
+          comment,
+          rating,
+          product_id: Number(productId),
+        }),
+      })
+
+      if (!res.ok) {
+        const error = await res.json()
+        throw new Error(error.message || "Failed to submit review")
+      }
+
       toast.success("Review submitted!")
-      onSuccess()
       setName("")
       setComment("")
       setRating(5)
-    } catch (err) {
+      onSuccess()
+    } catch (err: any) {
       console.error(err)
-      toast.error("Could not submit review")
+      toast.error(err.message || "Could not submit review")
     }
   }
 

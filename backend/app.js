@@ -15,9 +15,6 @@ const reviewWishlistRoutes = require('./routes/reviewWishlistRoutes');
 const searchRoutes = require('./routes/searchRoutes');
 
 
-
-
-
 const app = express();
 
 // Middleware
@@ -25,12 +22,13 @@ app.use(helmet());
 app.use(cors());
 app.use(morgan('dev'));
 app.use(express.json());
+app.use('/uploads', express.static('uploads'))
 
 // Static file serving (for uploaded images)
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Route handlers
-app.use('/api/auth', authRoutes);
+app.use('/api', authRoutes);
 app.use('/api', productRoutes);
 app.use('/api', metaRoutes);
 app.use('/api', orderRoutes);

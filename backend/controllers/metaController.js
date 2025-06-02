@@ -66,3 +66,25 @@ exports.getTags = async (req, res) => {
     res.status(500).json({ message: 'Error fetching tags' });
   }
 };
+exports.deleteCategory = async (req, res) => {
+  try {
+    const { id } = req.params;
+    await Category.destroy({ where: { id } });
+    res.json({ message: 'Category deleted successfully' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Error deleting category' });
+  }
+};
+
+exports.deleteBrand = async (req, res) => {
+  try {
+    const { id } = req.params;
+    await Brand.destroy({ where: { id } });
+    res.json({ message: 'Brand deleted successfully' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Error deleting brand' });
+  }
+};
+

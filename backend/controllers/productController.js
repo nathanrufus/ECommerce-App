@@ -74,7 +74,13 @@ exports.deleteProduct = async (req, res) => {
 
 exports.getAllProducts = async (req, res) => {
   try {
-    const products = await Product.findAll({ include: [Category, Brand, MediaFile] });
+    const products = await Product.findAll({
+      include: [
+        { model: Category },          
+        { model: Brand },
+        { model: MediaFile },
+      ],
+    });
     res.json(products);
   } catch (err) {
     console.error(err);

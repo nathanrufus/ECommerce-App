@@ -1,5 +1,7 @@
+"use client"
+
 import React, { useEffect } from 'react';
-import { useRouter } from 'next/router';
+import { useRouter } from 'next/navigation';
 import CartItem from '@/components/CartItem';
 import OrderSummary from '@/components/OrderSummary';
 import useCartStore from '@/store/cartStore'; 
@@ -26,7 +28,7 @@ const CartPage = () => {
 
   if (cartItems.length === 0) {
     return (
-      <div className="max-w-4xl mx-auto px-4 py-16 text-center">
+      <div className="max-w-4xl mx-auto px-4 py-16 text-center mt-20 h-screen">
         <h2 className="text-2xl font-semibold mb-4">Your cart is empty</h2>
         <p className="text-gray-600">Browse products and add items to your cart.</p>
       </div>
