@@ -3,6 +3,8 @@ const Category = require('../models/category');
 const Brand = require('../models/brand');
 const ProductTag = require('../models/producttag');
 const redis = require('../utils/redis');
+const MediaFile = require('../models/mediafile');
+
 
 // ------------------------------
 // SEARCH PRODUCTS
@@ -51,8 +53,21 @@ exports.filterProducts = async (req, res) => {
     const { category, brand, minPrice, maxPrice, tag } = req.query;
     const filter = {};
 
-    if (category) filter.category_id = category;
-    if (brand) filter.brand_id = brand;
+    // ✅ Convert category slug to _id
+    if (category) {
+      const catDoc = await Category.findOne({ slug: category }).lean();
+      if (!catDoc) return res.json([]); // no results
+      filter.category_id = catDoc._id;
+    }
+
+    // ✅ Convert brand slug to _id (if you're passing slugs for brand too)
+    if (brand) {
+      const brandDoc = await Brand.findOne({ slug: brand }).lean();
+      if (!brandDoc) return res.json([]);
+      filter.brand_id = brandDoc._id;
+    }
+
+    // ✅ Handle price range
     if (minPrice || maxPrice) {
       filter.price = {};
       if (minPrice) filter.price.$gte = parseFloat(minPrice);
@@ -62,26 +77,29 @@ exports.filterProducts = async (req, res) => {
     let products;
 
     if (tag) {
-      // Join on tags using manual lookup
-      const tagDoc = await ProductTag.findOne({ slug: tag });
-      if (!tagDoc) return res.json([]); // no products if tag doesn't exist
-
+      const tagDoc = await ProductTag.findOne({ slug: tag }).lean();
+      if (!tagDoc) return res.json([]);
       products = await Product.find({
         ...filter,
         tags: tagDoc._id
-      })
-        .populate('category_id')
-        .populate('brand_id')
-        .lean();
+      }).populate('category_id brand_id tags').lean();
     } else {
       products = await Product.find(filter)
-        .populate('category_id')
-        .populate('brand_id')
+        .populate('category_id brand_id tags')
         .lean();
     }
 
-    await redis.set(cacheKey, JSON.stringify(products), 'EX', 300);
-    res.json(products);
+    // ✅ Attach media_files
+    const productIds = products.map(p => p._id);
+    const mediaFiles = await MediaFile.find({ product_id: { $in: productIds } }).lean();
+
+    const enriched = products.map(p => ({
+      ...p,
+      media_files: mediaFiles.filter(m => m.product_id.toString() === p._id.toString())
+    }));
+
+    await redis.set(cacheKey, JSON.stringify(enriched), 'EX', 300);
+    res.json(enriched);
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Filter failed' });

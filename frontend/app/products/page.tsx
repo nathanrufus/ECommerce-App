@@ -1,203 +1,181 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import Image from 'next/image';
-import Link from 'next/link';
-import { FiHeart, FiShoppingCart } from 'react-icons/fi';
+import React, { useEffect, useState } from 'react';
+import ProductCard from '@/components/ui/ProductCard';
+import { useSearchParams, useRouter } from 'next/navigation';
 
-type Product = {
+interface Tag {
   _id: string;
   name: string;
-  price: number;
+}
+
+interface Product {
+  _id: string;
+  name: string;
   slug: string;
+  price: number;
   media_files: { file_url: string }[];
-};
+  tags?: Tag[];
+}
 
-type Brand = {
+interface Brand {
   _id: string;
   name: string;
-};
+  slug: string;
+}
 
 export default function ProductsPage() {
+  const searchParams = useSearchParams();
+  const router = useRouter();
+
   const [products, setProducts] = useState<Product[]>([]);
   const [brands, setBrands] = useState<Brand[]>([]);
   const [loading, setLoading] = useState(false);
-  const [page, setPage] = useState(1);
-  const [hasMore, setHasMore] = useState(true);
-  const [imageIndexes, setImageIndexes] = useState<{ [id: string]: number }>({});
+
   const [filters, setFilters] = useState({
-    minPrice: '',
-    maxPrice: '',
-    brand: '',
+    brand: searchParams.get('brand') || '',
+    minPrice: searchParams.get('minPrice') || '',
+    maxPrice: searchParams.get('maxPrice') || '',
   });
 
-  const baseURL = process.env.NEXT_PUBLIC_API_BASE_URL;
+  const category = searchParams.get('category') || '';
 
   useEffect(() => {
     const fetchBrands = async () => {
       try {
-        const res = await fetch(`${baseURL}/brands`);
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/brands`);
         const data = await res.json();
         setBrands(data);
       } catch (err) {
-        console.error('Failed to load brands:', err);
+        console.error('Failed to fetch brands', err);
       }
     };
+
     fetchBrands();
-  }, [baseURL]);
+  }, []);
 
-  const fetchProducts = async (reset = true) => {
-    try {
+  useEffect(() => {
+    const fetchFilteredProducts = async () => {
       setLoading(true);
-      const query = new URLSearchParams();
-      if (filters.minPrice) query.append('minPrice', filters.minPrice);
-      if (filters.maxPrice) query.append('maxPrice', filters.maxPrice);
-      if (filters.brand) query.append('brand', filters.brand);
-      query.append('page', page.toString());
+      try {
+        const params = new URLSearchParams();
+        if (category) params.append('category', category);
+        if (filters.brand) params.append('brand', filters.brand);
+        if (filters.minPrice) params.append('minPrice', filters.minPrice);
+        if (filters.maxPrice) params.append('maxPrice', filters.maxPrice);
 
-      const res = await fetch(`${baseURL}/filter/products?${query.toString()}`);
-      const data = await res.json();
-
-      if (!Array.isArray(data) || data.length === 0) {
-        setProducts([]);
-        setHasMore(false);
-        return;
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/filter/products?${params.toString()}`);
+        const data = await res.json();
+        setProducts(data);
+      } catch (err) {
+        console.error('Failed to fetch filtered products:', err);
+      } finally {
+        setLoading(false);
       }
+    };
 
-      const enrichedProducts = await Promise.all(
-        data.map(async (product) => {
-          if (product.media_files && product.media_files.length > 0) return product;
-          const mediaRes = await fetch(`${baseURL}/products/${product._id}`);
-          const mediaData = await mediaRes.json();
-          return {
-            ...product,
-            media_files: mediaData.media_files || [],
-          };
-        })
-      );
+    fetchFilteredProducts();
+  }, [category, filters]);
 
-      const updatedIndexes: { [id: string]: number } = {};
-      enrichedProducts.forEach((p) => {
-        updatedIndexes[p._id] = 0;
-      });
-
-      if (reset) {
-        setProducts(enrichedProducts);
-        setImageIndexes(updatedIndexes);
-      } else {
-        setProducts((prev) => [...prev, ...enrichedProducts]);
-        setImageIndexes((prev) => ({ ...prev, ...updatedIndexes }));
-      }
-
-      setHasMore(enrichedProducts.length > 0);
-    } catch (err) {
-      console.error('Failed to fetch products:', err);
-    } finally {
-      setLoading(false);
-    }
+  const handleFilterChange = (field: string, value: string) => {
+    setFilters((prev) => ({ ...prev, [field]: value }));
   };
 
-  useEffect(() => {
-    setPage(1);
-    fetchProducts(true);
-  }, [filters]);
+  const handleApplyFilters = () => {
+    const query = new URLSearchParams();
+    if (category) query.append('category', category);
+    if (filters.brand) query.append('brand', filters.brand);
+    if (filters.minPrice) query.append('minPrice', filters.minPrice);
+    if (filters.maxPrice) query.append('maxPrice', filters.maxPrice);
+    router.push(`/products?${query.toString()}`);
+  };
 
-  useEffect(() => {
-    if (page > 1) fetchProducts(false);
-  }, [page]);
-
-  // Rotate images every 2.5s
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setImageIndexes((prev) => {
-        const updated: { [id: string]: number } = {};
-        products.forEach((product) => {
-          const images = product.media_files || [];
-          if (images.length > 1) {
-            const current = prev[product._id] || 0;
-            updated[product._id] = (current + 1) % images.length;
-          } else {
-            updated[product._id] = 0;
-          }
-        });
-        return updated;
-      });
-    }, 2500);
-    return () => clearInterval(interval);
-  }, [products]);
-
-  const handleLoadMore = () => setPage((prev) => prev + 1);
+  const handleResetFilters = () => {
+    setFilters({ brand: '', minPrice: '', maxPrice: '' });
+    const query = new URLSearchParams();
+    if (category) query.append('category', category);
+    router.push(`/products?${query.toString()}`);
+  };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-12 pt-20">
-      {/* ...filters code stays same... */}
+    <div className="max-w-7xl mx-auto px-4 py-20">
+      <h1 className="text-2xl font-bold text-[#1B1D30] mb-6">
+        {category ? `Products in "${category}"` : 'All Products'}
+      </h1>
 
-      {/* Product Grid */}
-      <section className="animate-fade-in">
-        <h2 className="text-2xl font-semibold text-[#1B1D30] mb-6">Available Products</h2>
+      {/* Filters */}
+      <div className="bg-white p-5 rounded-xl shadow-sm mb-10 max-w-3xl mx-auto">
+        <h2 className="text-lg font-semibold text-[#1B1D30] mb-4 text-center">Filter Products</h2>
 
-        {loading && products.length === 0 && (
-          <div className="text-center py-10 text-gray-600">Loading products...</div>
-        )}
-
-        {!loading && products.length === 0 && (
-          <div className="text-center py-10 text-gray-500">
-            No products found. Try adjusting your filters.
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+          <div>
+            <label className="block text-sm font-medium mb-1">Brand</label>
+            <select
+              value={filters.brand}
+              onChange={(e) => handleFilterChange('brand', e.target.value)}
+              className="w-full border border-gray-300 px-3 py-2 rounded-md text-sm"
+            >
+              <option value="">All Brands</option>
+              {brands.map((brand) => (
+                <option key={brand._id} value={brand._id}>
+                  {brand.name}
+                </option>
+              ))}
+            </select>
           </div>
-        )}
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-          {products.map((product) => {
-            const currentImage = product.media_files?.[imageIndexes[product._id] || 0]?.file_url || '/image.webp';
-            return (
-              <div
-                key={product._id}
-                className="relative bg-white rounded-xl shadow-sm hover:shadow-md p-4 transition flex flex-col overflow-hidden"
-              >
-                <button className="absolute top-3 right-3 text-gray-400 hover:text-red-500 transition z-10">
-                  <FiHeart className="w-5 h-5" />
-                </button>
+          <div>
+            <label className="block text-sm font-medium mb-1">Min Price</label>
+            <input
+              type="number"
+              value={filters.minPrice}
+              onChange={(e) => handleFilterChange('minPrice', e.target.value)}
+              className="w-full border border-gray-300 px-3 py-2 rounded-md text-sm"
+              placeholder="0"
+            />
+          </div>
 
-                <div className="relative w-full h-48 mb-3 overflow-hidden rounded-lg bg-gray-100">
-                  <Image
-                    key={currentImage}
-                    src={currentImage}
-                    alt={product.name}
-                    fill
-                    unoptimized
-                    className="object-cover transition-opacity duration-700 ease-in-out"
-                  />
-                </div>
-
-                <h3 className="font-medium text-sm text-[#1B1D30] mb-1 line-clamp-1">{product.name}</h3>
-                <p className="text-xs text-gray-500 mb-2">
-                  KES {Number(product.price).toLocaleString()}
-                </p>
-
-                <div className="flex justify-between items-center mt-auto">
-                  <Link href={`/products/${product.slug}`} className="text-xs text-green-600 hover:underline">
-                    View
-                  </Link>
-                  <button className="text-gray-500 hover:text-green-600 transition">
-                    <FiShoppingCart className="w-5 h-5" />
-                  </button>
-                </div>
-              </div>
-            );
-          })}
+          <div>
+            <label className="block text-sm font-medium mb-1">Max Price</label>
+            <input
+              type="number"
+              value={filters.maxPrice}
+              onChange={(e) => handleFilterChange('maxPrice', e.target.value)}
+              className="w-full border border-gray-300 px-3 py-2 rounded-md text-sm"
+              placeholder="10000"
+            />
+          </div>
         </div>
 
-        {hasMore && !loading && (
-          <div className="flex justify-center mt-8">
-            <button
-              onClick={handleLoadMore}
-              className="bg-[#1B1D30] hover:bg-[#70B244] text-white px-6 py-2 rounded-md text-sm transition"
-            >
-              Load More
-            </button>
-          </div>
-        )}
-      </section>
+        <div className="flex justify-between mt-6">
+          <button
+            onClick={handleApplyFilters}
+            className="bg-[#1B1D30] text-white px-6 py-2 rounded-md text-sm hover:bg-[#70B244]"
+          >
+            Apply Filters
+          </button>
+          <button
+            onClick={handleResetFilters}
+            className="text-sm text-[#1B1D30] underline hover:text-[#70B244]"
+          >
+            Reset
+          </button>
+        </div>
+      </div>
+
+      {loading ? (
+        <div className="text-center text-gray-500 py-20">Loading...</div>
+      ) : products.length === 0 ? (
+        <div className="text-center text-gray-500 py-20">
+          No products match your filters.
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+          {products.map((product) => (
+            <ProductCard key={product._id} product={product} />
+          ))}
+        </div>
+      )}
     </div>
   );
 }

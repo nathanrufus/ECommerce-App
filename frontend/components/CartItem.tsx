@@ -1,13 +1,14 @@
 import React from 'react';
 
 type CartItemProps = {
-  id: number;
+  id: string;
   name: string;
   price: number;
   quantity: number;
-  onQuantityChange: (id: number, quantity: number) => void;
-  onRemove: (id: number) => void;
+  onQuantityChange: (id: string, quantity: number) => void;
+  onRemove: (id: string) => void;
 };
+
 
 const CartItem: React.FC<CartItemProps> = ({
   id,

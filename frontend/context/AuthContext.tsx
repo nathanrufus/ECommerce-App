@@ -56,6 +56,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setToken(token)
     localStorage.setItem("user", JSON.stringify(user))
     localStorage.setItem("token", token)
+    document.cookie = `token=${token}; path=/`;
   }
 
   const logout = () => {

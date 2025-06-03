@@ -1,8 +1,12 @@
 'use client';
+
 import React, { useEffect, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { FiHeart, FiShoppingCart } from 'react-icons/fi';
+import toast from 'react-hot-toast';
+import useCartStore from '@/store/cartStore';
+import useWishlistStore from '@/store/wishlistStore';
 
 type Tag = {
   _id: string;
@@ -20,67 +24,123 @@ type Product = {
 
 export default function ProductCard({ product }: { product: Product }) {
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [adding, setAdding] = useState(false);
   const images = Array.isArray(product.media_files) ? product.media_files : [];
+  const { addToCart } = useCartStore();
+
+  const {
+    wishlist,
+    addToWishlist,
+    removeFromWishlist,
+    isInWishlist,
+    loadWishlist,
+  } = useWishlistStore();
 
   useEffect(() => {
-    if (images.length <= 1) {
-      console.log(`[${product.name}] Only one or no image — skipping rotation.`);
-      return;
-    }
+    loadWishlist();
+  }, [loadWishlist]);
 
-    console.log(`[${product.name}] Starting image rotation with ${images.length} images.`);
+  const isWishlisted = isInWishlist(product._id);
 
-    const interval = setInterval(() => {
-      setCurrentIndex((prev) => {
-        const nextIndex = (prev + 1) % images.length;
-        console.log(`[${product.name}] Switching image: ${prev} → ${nextIndex}`);
-        return nextIndex;
+  const handleWishlistToggle = () => {
+    if (isWishlisted) {
+      removeFromWishlist(product._id);
+      toast.success('Removed from wishlist');
+    } else {
+      addToWishlist({
+        id: product._id,
+        name: product.name,
+        price: product.price,
+        image: product.media_files?.[0]?.file_url || '/placeholder.jpg',
       });
-    }, 2500);
+      toast.success('Added to wishlist');
+    }
+  };
 
-    return () => {
-      console.log(`[${product.name}] Clearing interval on unmount.`);
-      clearInterval(interval);
-    };
-  }, [images, product.name]);
+  useEffect(() => {
+    if (images.length <= 1) return;
+    const interval = setInterval(() => {
+      setCurrentIndex((prev) => (prev + 1) % images.length);
+    }, 2500);
+    return () => clearInterval(interval);
+  }, [images]);
 
   const activeImage = images[currentIndex]?.file_url || '/image.webp';
 
+  const handleAddToCart = () => {
+    if (adding) return;
+    setAdding(true);
+    addToCart({
+      id: product._id,
+      name: product.name,
+      price: product.price,
+      quantity: 1,
+    });
+    toast.success(`${product.name} added to cart`);
+    sessionStorage.setItem('bounceCart', 'true');
+    setTimeout(() => setAdding(false), 1000);
+  };
+
   return (
-    <div className="bg-white rounded-xl shadow-sm hover:shadow-md transition p-4 flex flex-col group relative overflow-hidden">
-      {/* Wishlist Icon */}
-      <button className="absolute top-3 right-3 text-gray-400 hover:text-red-500 transition z-10">
+    <div className="bg-white border border-gray-200 rounded-2xl hover:shadow-md transition-all p-5 flex flex-col group relative overflow-hidden min-h-[360px]">
+     {/* Top Overlay: Tags + Wishlist Icon */}
+      {Array.isArray(product.tags) && product.tags.length > 0 && (
+        <div className="absolute top-3 left-3 flex flex-wrap gap-1 z-10">
+          {product.tags.map((tag, i) => (
+            <span
+              key={`${tag.name}-${i}`}
+              className="text-[10px] font-semibold bg-green-400 text-gray-700 px-2 py-0.5 rounded-full shadow-sm"
+            >
+              {tag.name}
+            </span>
+          ))}
+        </div>
+      )}
+
+      {/* Wishlist Icon (Top-Right) */}
+      <button
+        onClick={handleWishlistToggle}
+        className={`absolute top-3 right-3 transition z-10 ${
+          isWishlisted ? 'text-red-500' : 'text-gray-400 hover:text-red-500'
+        }`}
+        title="Toggle wishlist"
+      >
         <FiHeart className="w-5 h-5" />
       </button>
 
-      {/* Product Image */}
-      <div className="relative w-full h-48 mb-3 overflow-hidden rounded-lg bg-gray-100">
+
+      {/* Product Image with Dots */}
+      <div className="relative w-full h-56 mb-4 overflow-hidden rounded-lg bg-gray-100">
         <Image
           key={activeImage}
           src={activeImage}
           alt={product.name}
           fill
           unoptimized
-          onError={() => console.log(`[${product.name}] Failed to load image: ${activeImage}`)}
           className="object-cover transition-opacity duration-700 ease-in-out"
         />
+        {images.length > 1 && (
+          <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 flex gap-1">
+            {images.map((_, i) => (
+              <span
+                key={i}
+                className={`w-2 h-2 rounded-full ${
+                  i === currentIndex ? 'bg-green-600' : 'bg-gray-300'
+                } transition-all duration-300`}
+              ></span>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Product Info */}
       <div className="flex-grow">
-        <h3 className="font-medium text-black text-sm mb-1 line-clamp-1">{product.name}</h3>
-        {Array.isArray(product.tags) && product.tags.length > 0 && (
-          <div className="flex flex-wrap gap-1 mb-2">
-            {product.tags.map((tag) => (
-              <span
-                key={tag._id || tag.name}
-                className="text-[10px] bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full"
-              >
-                {tag.name}
-              </span>
-            ))}
-          </div>
-        )}
+        <h3
+          className="font-medium text-black text-sm mb-2 line-clamp-2"
+          title={product.name}
+        >
+          {product.name}
+        </h3>
       </div>
 
       {/* Price + Actions */}
@@ -89,10 +149,20 @@ export default function ProductCard({ product }: { product: Product }) {
           KES {Number(product.price).toLocaleString()}
         </p>
         <div className="flex items-center space-x-3">
-          <Link href={`/products/${product.slug}`} className="text-xs text-green-600 hover:underline">
+          <Link
+            href={`/products/${product.slug}`}
+            className="text-xs text-green-600 hover:underline"
+          >
             View
           </Link>
-          <button className="text-gray-500 hover:text-green-600 transition">
+          <button
+            onClick={handleAddToCart}
+            disabled={adding}
+            className={`text-gray-500 hover:text-green-600 transition ${
+              adding ? 'opacity-50 cursor-not-allowed' : ''
+            }`}
+            title="Add to cart"
+          >
             <FiShoppingCart className="w-5 h-5" />
           </button>
         </div>

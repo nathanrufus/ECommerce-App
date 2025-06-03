@@ -63,6 +63,38 @@ exports.getUserOrders = async (req, res) => {
   }
 };
 
+exports.getAllOrders = async (req, res) => {
+  try {
+    const orders = await Order.find()
+      .populate({
+        path: 'items',
+        populate: { path: 'product_id', select: 'name price' },
+      })
+      .populate('customer_id', 'name email');
+
+    res.json(orders);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Error fetching orders' });
+  }
+};
+exports.getOrderByIdAdmin = async (req, res) => {
+  try {
+    const order = await Order.findById(req.params.id)
+      .populate({
+        path: 'items',
+        populate: { path: 'product_id', select: 'name price' },
+      })
+      .populate('customer_id', 'name email');
+
+    if (!order) return res.status(404).json({ message: 'Order not found' });
+    res.json(order);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Error fetching order' });
+  }
+};
+
 exports.getOrderById = async (req, res) => {
   try {
     const order = await Order.findOne({

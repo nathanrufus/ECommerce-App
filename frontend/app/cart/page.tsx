@@ -14,13 +14,14 @@ const CartPage = () => {
     loadFromStorage(); // persist from localStorage on mount
   }, [loadFromStorage]);
 
-  const handleQuantityChange = (id: number, quantity: number) => {
-    updateQuantity(id, quantity);
-  };
+ const handleQuantityChange = (id: string, quantity: number) => {
+  updateQuantity(id, quantity);
+};
 
-  const handleRemove = (id: number) => {
-    removeItem(id);
-  };
+const handleRemove = (id: string) => {
+  removeItem(id);
+};
+
 
   const handleCheckout = () => {
     router.push('/checkout');

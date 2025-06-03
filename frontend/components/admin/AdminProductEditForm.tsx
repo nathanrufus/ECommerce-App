@@ -27,8 +27,11 @@ export default function AdminProductEditForm() {
     meta_title: '',
     meta_description: '',
   });
-  const [thumbnail, setThumbnail] = useState('');
   const [loading, setLoading] = useState(true);
+
+  // 🔽 New image upload states
+  const [newImages, setNewImages] = useState<File[]>([]);
+  const [previewUrls, setPreviewUrls] = useState<string[]>([]);
 
   useEffect(() => {
     const load = async () => {
@@ -57,7 +60,6 @@ export default function AdminProductEditForm() {
           meta_description: product.meta_description || '',
         });
 
-        setThumbnail(product.MediaFiles?.[0]?.file_url || '');
         setCategories(categoriesData);
         setBrands(brandsData);
       } catch (err) {
@@ -75,10 +77,33 @@ export default function AdminProductEditForm() {
     setForm((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    try {
-      const res = await fetch(`${API_BASE}/products/${productId}`, {
+ const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
+  try {
+    let res;
+
+    if (newImages.length > 0) {
+      const formData = new FormData();
+
+      // Append all fields to FormData
+      Object.entries(form).forEach(([key, value]) => {
+        formData.append(key, value);
+      });
+
+      newImages.forEach((file) => {
+        formData.append('images', file); // name must match upload.array('images')
+      });
+
+      res = await fetch(`${API_BASE}/products/${productId}`, {
+        method: 'PUT',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        body: formData,
+      });
+    } else {
+      // fallback: no image upload
+      res = await fetch(`${API_BASE}/products/${productId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -86,14 +111,46 @@ export default function AdminProductEditForm() {
         },
         body: JSON.stringify(form),
       });
-
-      if (!res.ok) throw new Error('Update failed');
-
-      setSuccess(true);
-      setTimeout(() => router.push('/admin/products'), 2000);
-    } catch (err) {
-      console.error('Failed to update product:', err);
     }
+
+    if (!res.ok) throw new Error('Update failed');
+
+    setSuccess(true);
+    setTimeout(() => router.push('/admin/products'), 2000);
+  } catch (err) {
+    console.error('Failed to update product:', err);
+  }
+};
+
+  const handleDeleteImage = async (mediaId: string) => {
+    if (!confirm('Delete this image?')) return;
+
+    try {
+      const res = await fetch(`${API_BASE}/media/${mediaId}`, {
+        method: 'DELETE',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!res.ok) throw new Error('Failed to delete image');
+
+      // Update UI
+      setProduct((prev: any) => ({
+        ...prev,
+        MediaFiles: prev.MediaFiles.filter((m: any) => m._id !== mediaId),
+      }));
+    } catch (err) {
+      console.error('Image deletion failed:', err);
+    }
+  };
+
+  const handleNewImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    setNewImages(files);
+
+    const previews = files.map(file => URL.createObjectURL(file));
+    setPreviewUrls(previews);
   };
 
   if (loading) return <p className="text-center mt-10">Loading...</p>;
@@ -107,6 +164,7 @@ export default function AdminProductEditForm() {
         </div>
       )}
       <form onSubmit={handleSubmit} className="space-y-4">
+        {/* All existing form fields (unchanged) */}
         <div>
           <label className="block text-sm font-medium text-gray-700">Product Name</label>
           <input name="name" value={form.name} onChange={handleChange} className="w-full p-2 border rounded" />
@@ -153,12 +211,53 @@ export default function AdminProductEditForm() {
             ))}
           </select>
         </div>
-        {thumbnail && (
-          <div>
-            <label className="block text-sm font-medium text-gray-700">Current Image</label>
-            <img src={thumbnail} alt="Product" className="w-full h-48 object-cover rounded" />
+
+        {/* 🔽 Upload New Images */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700">Upload New Images</label>
+          <input
+            type="file"
+            multiple
+            accept="image/*"
+            onChange={handleNewImageChange}
+            className="w-full p-2 border rounded"
+          />
+        </div>
+
+        {previewUrls.length > 0 && (
+          <div className="grid grid-cols-2 gap-3 mt-2">
+            {previewUrls.map((url, idx) => (
+              <img key={idx} src={url} alt={`Preview ${idx}`} className="w-full h-32 object-cover rounded border" />
+            ))}
           </div>
         )}
+
+        {/* 🔽 Existing Images with Delete */}
+        {product?.MediaFiles?.length > 0 && (
+          <div className="mt-6">
+            <label className="block text-sm font-medium text-gray-700">Existing Images</label>
+            <div className="grid grid-cols-2 gap-3 mt-2">
+              {product.MediaFiles.map((img: any) => (
+                <div key={img._id} className="relative group">
+                  <img
+                    src={img.file_url}
+                    alt="Product Media"
+                    className="w-full h-32 object-cover rounded border"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => handleDeleteImage(img._id)}
+                    className="absolute top-1 right-1 bg-red-600 text-white rounded-full p-1 text-xs opacity-0 group-hover:opacity-100 transition"
+                    title="Delete"
+                  >
+                    ✕
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
         <button type="submit" className="w-full bg-blue-600 text-white p-2 rounded hover:bg-blue-700">
           Update Product
         </button>

@@ -11,7 +11,16 @@ exports.createCategory = async (req, res) => {
   try {
     const { name, parent_id } = req.body;
     const slug = slugify(name, { lower: true });
-    const category = new Category({ name, slug, parent_id });
+
+    const thumbnail_url = req.file ? req.file.path : null;
+
+    const category = new Category({
+      name,
+      slug,
+      parent_id,
+      thumbnail_url,
+    });
+
     await category.save();
     res.status(201).json({ category });
   } catch (err) {

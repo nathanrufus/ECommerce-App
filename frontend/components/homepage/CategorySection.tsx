@@ -20,9 +20,9 @@ export default function CategorySection({ category }: { category: Category }) {
   const [products, setProducts] = useState<Product[]>([]);
 
   useEffect(() => {
-    fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/products?category=${category.slug}`)
+    fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/products/category/${category.slug}`)
       .then(res => res.json())
-      .then(data => setProducts(data.slice(0, 11)));
+      .then(data => setProducts(data.slice(0, 8)));
   }, [category.slug]);
 
   return (
@@ -37,11 +37,20 @@ export default function CategorySection({ category }: { category: Category }) {
             See All
           </Link>
         </div>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+
+        <div className="overflow-x-auto scroll-smooth snap-x snap-mandatory">
+        <div className="flex gap-4 w-max min-w-full">
           {products.map(product => (
-            <ProductCard key={product._id} product={product} />
+            <div
+              key={product._id}
+              className="min-w-[250px] max-w-[300px] flex-shrink-0 snap-start"
+            >
+              <ProductCard product={product} />
+            </div>
           ))}
         </div>
+      </div>
+
       </div>
     </section>
   );

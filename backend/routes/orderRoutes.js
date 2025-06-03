@@ -8,6 +8,9 @@ const roleMiddleware = require('../middleware/roleMiddleware');
 router.post('/orders', authMiddleware, orderController.createOrder);
 router.get('/orders', authMiddleware, orderController.getUserOrders);
 router.get('/orders/:id', authMiddleware, orderController.getOrderById);
+router.get('/admin/orders', authMiddleware, roleMiddleware('admin'), orderController.getAllOrders);
+router.get('/admin/orders/:id', authMiddleware, roleMiddleware('admin'), orderController.getOrderByIdAdmin);
+
 
 // Admin route
 router.patch('/orders/:id/status', authMiddleware, roleMiddleware('admin'), orderController.updateOrderStatus);

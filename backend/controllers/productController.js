@@ -59,15 +59,19 @@ exports.updateProduct = async (req, res) => {
   try {
     const id = req.params.id;
     const updates = req.body;
-    if (updates.name) updates.slug = slugify(updates.name, { lower: true });
+
+    if (updates.name) {
+      updates.slug = slugify(updates.name, { lower: true });
+    }
 
     await Product.findByIdAndUpdate(id, updates);
 
     if (req.files && req.files.length > 0) {
       const media = req.files.map(file => ({
         product_id: id,
-        file_url: `/uploads/${file.filename}`,
-        file_type: file.mimetype
+        file_url: file.path,             // ✅ Use Cloudinary path
+        file_type: file.mimetype,
+        public_id: file.filename         // ✅ Save for deletions
       }));
       await MediaFile.insertMany(media);
     }
@@ -78,6 +82,7 @@ exports.updateProduct = async (req, res) => {
     res.status(500).json({ message: 'Error updating product' });
   }
 };
+
 
 // DELETE PRODUCT
 exports.deleteProduct = async (req, res) => {
@@ -95,7 +100,7 @@ exports.deleteProduct = async (req, res) => {
 // GET ALL PRODUCTS
 exports.getAllProducts = async (req, res) => {
   try {
-    const products = await Product.find().lean();
+   const products = await Product.find().populate('tags').lean();
 
     const productIds = products.map(p => p._id);
     const mediaFiles = await MediaFile.find({ product_id: { $in: productIds } }).lean();
@@ -183,7 +188,9 @@ exports.getProductsByCategory = async (req, res) => {
     const category = await Category.findOne({ slug }).lean();
     if (!category) return res.status(404).json({ message: 'Category not found' });
 
-    const products = await Product.find({ category_id: category._id }).lean();
+    const products = await Product.find({ category_id: category._id })
+      .populate('tags') // this is the fix
+      .lean();
 
     const productIds = products.map(p => p._id);
     const mediaFiles = await MediaFile.find({ product_id: { $in: productIds } }).lean();
