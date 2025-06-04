@@ -69,7 +69,7 @@ export default function ConfirmPage() {
   }
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-12">
+    <div className="max-w-4xl mx-auto px-4 py-12 min-h-screen">
       <h1 className="text-3xl font-bold text-[#1B1D30] mb-2">
         Order Confirmed
       </h1>

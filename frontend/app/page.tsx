@@ -2,7 +2,6 @@
 import React, { useEffect, useState } from 'react';
 import HeroBanner from '@/components/homepage/HeroBanner';
 import InfoStrip from '@/components/homepage/InfoStrip';
-import NewsletterSignup from '@/components/homepage/NewsletterSignup';
 import CategorySection from '@/components/homepage/CategorySection';
 import CategoryStrip from '@/components/homepage/CategoryStrip';
 
@@ -52,7 +51,6 @@ export default function HomePage() {
         <CategorySection key={category._id} category={category} products={products} />
       ))}
       <InfoStrip />
-      <NewsletterSignup />
     </main>
   );
 }

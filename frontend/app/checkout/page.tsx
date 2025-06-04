@@ -85,7 +85,7 @@ export default function CheckoutPage() {
   }
 
   return (
-    <div className="max-w-6xl mx-auto px-4 sm:px-6 py-5 sm:py-12 bg-gray-50">
+    <div className="max-w-6xl mx-auto px-4 sm:px-6 py-5 sm:py-12 bg-gray-50 min-h-screen ">
       <h1 className="text-2xl sm:text-3xl font-bold text-[#1B1D30] mb-3">Complete Your Order</h1>
       <p className="text-gray-600 text-sm sm:text-base mb-6">
         Please fill in your details to proceed.

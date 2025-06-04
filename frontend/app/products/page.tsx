@@ -55,27 +55,32 @@ export default function ProductsPage() {
   }, []);
 
   useEffect(() => {
-    const fetchFilteredProducts = async () => {
-      setLoading(true);
-      try {
-        const params = new URLSearchParams();
-        if (category) params.append('category', category);
-        if (filters.brand) params.append('brand', filters.brand);
-        if (filters.minPrice) params.append('minPrice', filters.minPrice);
-        if (filters.maxPrice) params.append('maxPrice', filters.maxPrice);
+  const fetchFilteredProducts = async () => {
+    setLoading(true);
+    try {
+      const params = new URLSearchParams();
+      if (category) params.append('category', category);
+      if (filters.brand) params.append('brand', filters.brand);
+      if (filters.minPrice) params.append('minPrice', filters.minPrice);
+      if (filters.maxPrice) params.append('maxPrice', filters.maxPrice);
 
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/filter/products?${params.toString()}`);
-        const data = await res.json();
-        setProducts(data);
-      } catch (err) {
-        console.error('Failed to fetch filtered products:', err);
-      } finally {
-        setLoading(false);
-      }
-    };
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/filter/products?${params.toString()}`
+      );
+      const data = await res.json();
 
-    fetchFilteredProducts();
-  }, [category, filters]);
+      // ✅ Defensive check to ensure it's an array
+      setProducts(Array.isArray(data.products) ? data.products : []);
+    } catch (err) {
+      console.error('Failed to fetch filtered products:', err);
+      setProducts([]); // fallback on error
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  fetchFilteredProducts();
+}, [category, filters]);
 
   const handleFilterChange = (field: string, value: string) => {
     setFilters((prev) => ({ ...prev, [field]: value }));

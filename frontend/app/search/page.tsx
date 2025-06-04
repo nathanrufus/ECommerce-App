@@ -1,30 +1,57 @@
 'use client';
+
 import { useSearchParams, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import ProductCard from '@/components/ui/ProductCard';
+
+// ✅ Define types
+type Product = {
+  _id: string;
+  name: string;
+  slug: string;
+  price: number;
+  media_files?: { file_url: string }[];
+  tags?: { _id: string; name: string }[];
+};
+
+type Brand = {
+  _id: string;
+  name: string;
+  slug: string;
+};
 
 export default function SearchPage() {
   const params = useSearchParams();
   const router = useRouter();
 
   const initialQuery = params.get('q') || '';
-  const [q, setQ] = useState(initialQuery);
-  const [brand, setBrand] = useState('');
-  const [minPrice, setMinPrice] = useState('');
-  const [maxPrice, setMaxPrice] = useState('');
-  const [products, setProducts] = useState([]);
-  const [brands, setBrands] = useState([]);
-  const [loading, setLoading] = useState(false);
+  const [q, setQ] = useState<string>(initialQuery);
+  const [brand, setBrand] = useState<string>('');
+  const [minPrice, setMinPrice] = useState<string>('');
+  const [maxPrice, setMaxPrice] = useState<string>('');
+  const [products, setProducts] = useState<Product[]>([]);
+  const [brands, setBrands] = useState<Brand[]>([]);
+  const [loading, setLoading] = useState<boolean>(false);
 
-  // ✅ Fetch brand list once
+  // ✅ Fetch brands
   useEffect(() => {
     fetch('/api/brands')
-      .then((res) => res.json())
-      .then((data) => setBrands(data))
-      .catch((err) => console.error('Failed to load brands', err));
+      .then(async (res) => {
+        if (!res.ok) {
+          const errorText = await res.text();
+          throw new Error(errorText);
+        }
+        const data = await res.json();
+        setBrands(Array.isArray(data) ? data : []);
+      })
+      .catch((err: unknown) => {
+        const message = err instanceof Error ? err.message : 'Unknown error';
+        console.error('Failed to load brands:', message);
+        setBrands([]);
+      });
   }, []);
 
-  // ✅ Unified search + filters using /api/filter/products
+  // ✅ Fetch products with filters
   const fetchFilteredProducts = async () => {
     setLoading(true);
     try {
@@ -35,21 +62,29 @@ export default function SearchPage() {
       if (maxPrice) url.searchParams.set('maxPrice', maxPrice);
 
       const res = await fetch(url.toString());
+
+      if (!res.ok) {
+        const errorText = await res.text();
+        throw new Error(errorText);
+      }
+
       const data = await res.json();
-      setProducts(data);
-    } catch (err) {
-      console.error('Product fetch failed', err);
+      setProducts(Array.isArray(data.products) ? data.products : []);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Unknown error';
+      console.error('Product fetch failed:', message);
+      setProducts([]);
     } finally {
       setLoading(false);
     }
   };
 
-  // ✅ React to filter changes
+  // ✅ Refetch when filters change
   useEffect(() => {
     fetchFilteredProducts();
   }, [q, brand, minPrice, maxPrice]);
 
-  // ✅ Push q to URL on form submit (for bookmarking)
+  // ✅ Update query string on search submit
   const handleFilterSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     router.push(`/search?q=${encodeURIComponent(q)}`);
@@ -59,7 +94,7 @@ export default function SearchPage() {
     <section className="px-4 py-8 max-w-6xl mx-auto">
       <h1 className="text-2xl font-bold text-black mb-4">Search & Filter Products</h1>
 
-      {/* 🔍 Search + Filters */}
+      {/* 🔍 Filters */}
       <form onSubmit={handleFilterSubmit} className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
         <input
           type="text"
@@ -75,7 +110,7 @@ export default function SearchPage() {
           className="px-4 py-2 border border-gray-300 rounded-md w-full"
         >
           <option value="">All Brands</option>
-          {brands.map((b: any) => (
+          {brands.map((b) => (
             <option key={b._id} value={b.slug}>
               {b.name}
             </option>
@@ -99,13 +134,17 @@ export default function SearchPage() {
         />
       </form>
 
+      {/* 🔄 Loading */}
       {loading && <p className="text-gray-500">Loading products...</p>}
+
+      {/* 📦 No results */}
       {!loading && products.length === 0 && (
         <p className="text-gray-600">No products found.</p>
       )}
 
+      {/* 🛍 Product Grid */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-        {products.map((product: any) => (
+        {products.map((product) => (
           <ProductCard key={product._id} product={product} />
         ))}
       </div>

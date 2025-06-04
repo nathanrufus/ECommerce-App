@@ -8,19 +8,20 @@ import toast from 'react-hot-toast';
 import useCartStore from '@/store/cartStore';
 import useWishlistStore from '@/store/wishlistStore';
 
-type Tag = {
+export type Tag = {
   _id: string;
   name: string;
 };
 
-type Product = {
+export type Product = {
   _id: string;
   name: string;
   slug: string;
   price: number;
-  media_files: { file_url: string }[];
+  media_files?: { file_url: string }[]; // Optional here for flexibility
   tags?: Tag[];
 };
+
 
 export default function ProductCard({ product }: { product: Product }) {
   const [currentIndex, setCurrentIndex] = useState(0);
