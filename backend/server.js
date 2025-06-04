@@ -1,7 +1,9 @@
-require('dotenv').config(); 
+// server.js
+require('dotenv').config(); // Load environment variables early
 
-const app = require('./app'); 
+const app = require('./app'); // Your Express or Next.js custom server
 const connectDB = require('./config/db');
+
 const PORT = process.env.PORT || 5000;
 
 (async () => {

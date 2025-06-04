@@ -1,11 +1,28 @@
+// /config/db.js
 const mongoose = require('mongoose');
 
 const connectDB = async () => {
   try {
-    await mongoose.connect(process.env.MONGODB_URI);
-    console.log('✅ MongoDB Atlas connected');
-  } catch (error) {
-    console.error('❌ MongoDB connection error:', error.message);
+    console.log('🔌 Connecting to MongoDB...');
+    await mongoose.connect(process.env.MONGODB_URI, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+    });
+
+    mongoose.connection.on('connected', () => {
+      console.log('✅ MongoDB connected');
+    });
+
+    mongoose.connection.on('error', (err) => {
+      console.error('❌ MongoDB connection error:', err);
+    });
+
+    mongoose.connection.on('disconnected', () => {
+      console.warn('⚠️ MongoDB disconnected');
+    });
+
+  } catch (err) {
+    console.error('❌ MongoDB initial connection error:', err);
     process.exit(1);
   }
 };
