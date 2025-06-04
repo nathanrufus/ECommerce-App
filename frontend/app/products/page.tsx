@@ -3,34 +3,26 @@
 import React, { useEffect, useState } from 'react';
 import ProductCard from '@/components/ui/ProductCard';
 import { useSearchParams, useRouter } from 'next/navigation';
-
-interface Tag {
+export type Brand = {
   _id: string;
   name: string;
-}
-
-interface Product {
+  slug: string;
+};
+export type Product = {
   _id: string;
   name: string;
   slug: string;
   price: number;
-  media_files: { file_url: string }[];
-  tags?: Tag[];
-}
-
-interface Brand {
-  _id: string;
-  name: string;
-  slug: string;
-}
-
+  media_files?: { file_url: string }[];
+  tags?: { _id: string; name: string }[];
+};
 export default function ProductsPage() {
   const searchParams = useSearchParams();
   const router = useRouter();
 
   const [products, setProducts] = useState<Product[]>([]);
   const [brands, setBrands] = useState<Brand[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState<boolean>(false);
 
   const [filters, setFilters] = useState({
     brand: searchParams.get('brand') || '',
@@ -44,10 +36,12 @@ export default function ProductsPage() {
     const fetchBrands = async () => {
       try {
         const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/brands`);
+        if (!res.ok) throw new Error(await res.text());
         const data = await res.json();
-        setBrands(data);
+        setBrands(Array.isArray(data) ? data : []);
       } catch (err) {
-        console.error('Failed to fetch brands', err);
+        console.error('Failed to fetch brands:', err);
+        setBrands([]);
       }
     };
 
@@ -55,32 +49,31 @@ export default function ProductsPage() {
   }, []);
 
   useEffect(() => {
-  const fetchFilteredProducts = async () => {
-    setLoading(true);
-    try {
-      const params = new URLSearchParams();
-      if (category) params.append('category', category);
-      if (filters.brand) params.append('brand', filters.brand);
-      if (filters.minPrice) params.append('minPrice', filters.minPrice);
-      if (filters.maxPrice) params.append('maxPrice', filters.maxPrice);
+    const fetchFilteredProducts = async () => {
+      setLoading(true);
+      try {
+        const params = new URLSearchParams();
+        if (category) params.append('category', category);
+        if (filters.brand) params.append('brand', filters.brand);
+        if (filters.minPrice) params.append('minPrice', filters.minPrice);
+        if (filters.maxPrice) params.append('maxPrice', filters.maxPrice);
 
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_BASE_URL}/filter/products?${params.toString()}`
-      );
-      const data = await res.json();
+        const res = await fetch(
+          `${process.env.NEXT_PUBLIC_API_BASE_URL}/filter/products?${params.toString()}`
+        );
+        if (!res.ok) throw new Error(await res.text());
+        const data = await res.json();
+        setProducts(Array.isArray(data) ? data : []);
+      } catch (err) {
+        console.error('Failed to fetch filtered products:', err);
+        setProducts([]);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-      // ✅ Defensive check to ensure it's an array
-      setProducts(Array.isArray(data.products) ? data.products : []);
-    } catch (err) {
-      console.error('Failed to fetch filtered products:', err);
-      setProducts([]); // fallback on error
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  fetchFilteredProducts();
-}, [category, filters]);
+    fetchFilteredProducts();
+  }, [category, filters]);
 
   const handleFilterChange = (field: string, value: string) => {
     setFilters((prev) => ({ ...prev, [field]: value }));
@@ -108,7 +101,6 @@ export default function ProductsPage() {
         {category ? `Products in ${category}` : 'All Products'}
       </h1>
 
-      {/* Filters */}
       <div className="bg-white p-5 rounded-xl shadow-sm mb-10 max-w-3xl mx-auto">
         <h2 className="text-lg font-semibold text-[#1B1D30] mb-4 text-center">Filter Products</h2>
 
@@ -125,7 +117,6 @@ export default function ProductsPage() {
                 <option key={brand._id} value={brand.slug}>
                   {brand.name}
                 </option>
-
               ))}
             </select>
           </div>

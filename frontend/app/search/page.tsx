@@ -4,8 +4,12 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import ProductCard from '@/components/ui/ProductCard';
 
-// ✅ Define types
-type Product = {
+export type Brand = {
+  _id: string;
+  name: string;
+  slug: string;
+};
+export type Product = {
   _id: string;
   name: string;
   slug: string;
@@ -14,140 +18,127 @@ type Product = {
   tags?: { _id: string; name: string }[];
 };
 
-type Brand = {
-  _id: string;
-  name: string;
-  slug: string;
-};
-
-export default function SearchPage() {
-  const params = useSearchParams();
+export default function ProductSearchFilterPage() {
+  const searchParams = useSearchParams();
   const router = useRouter();
 
-  const initialQuery = params.get('q') || '';
-  const [q, setQ] = useState<string>(initialQuery);
-  const [brand, setBrand] = useState<string>('');
-  const [minPrice, setMinPrice] = useState<string>('');
-  const [maxPrice, setMaxPrice] = useState<string>('');
   const [products, setProducts] = useState<Product[]>([]);
   const [brands, setBrands] = useState<Brand[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
 
-  // ✅ Fetch brands
+  const [filters, setFilters] = useState({
+    q: searchParams.get('q') || '',
+    brand: searchParams.get('brand') || '',
+    minPrice: searchParams.get('minPrice') || '',
+    maxPrice: searchParams.get('maxPrice') || '',
+  });
+
   useEffect(() => {
     fetch('/api/brands')
       .then(async (res) => {
-        if (!res.ok) {
-          const errorText = await res.text();
-          throw new Error(errorText);
-        }
+        if (!res.ok) throw new Error(await res.text());
         const data = await res.json();
         setBrands(Array.isArray(data) ? data : []);
       })
-      .catch((err: unknown) => {
-        const message = err instanceof Error ? err.message : 'Unknown error';
-        console.error('Failed to load brands:', message);
+      .catch((err) => {
+        console.error('Failed to load brands:', err);
         setBrands([]);
       });
   }, []);
 
-  // ✅ Fetch products with filters
-  const fetchFilteredProducts = async () => {
-    setLoading(true);
-    try {
-      const url = new URL('/api/filter/products', window.location.origin);
-      if (q.trim()) url.searchParams.set('q', q.trim());
-      if (brand) url.searchParams.set('brand', brand);
-      if (minPrice) url.searchParams.set('minPrice', minPrice);
-      if (maxPrice) url.searchParams.set('maxPrice', maxPrice);
+  useEffect(() => {
+    const fetchProducts = async () => {
+      setLoading(true);
+      try {
+        const query = new URLSearchParams();
+        if (filters.q) query.set('q', filters.q.trim());
+        if (filters.brand) query.set('brand', filters.brand);
+        if (filters.minPrice) query.set('minPrice', filters.minPrice);
+        if (filters.maxPrice) query.set('maxPrice', filters.maxPrice);
 
-      const res = await fetch(url.toString());
+        const res = await fetch(`/api/filter/products?${query.toString()}`);
+        if (!res.ok) throw new Error(await res.text());
 
-      if (!res.ok) {
-        const errorText = await res.text();
-        throw new Error(errorText);
+        const data = await res.json();
+        setProducts(Array.isArray(data) ? data : []);
+      } catch (err) {
+        console.error('Product fetch failed:', err);
+        setProducts([]);
+      } finally {
+        setLoading(false);
       }
+    };
 
-      const data = await res.json();
-      setProducts(Array.isArray(data.products) ? data.products : []);
-    } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Unknown error';
-      console.error('Product fetch failed:', message);
-      setProducts([]);
-    } finally {
-      setLoading(false);
-    }
+    fetchProducts();
+  }, [filters]);
+
+  const handleFilterChange = (field: string, value: string) => {
+    setFilters((prev) => ({ ...prev, [field]: value }));
   };
 
-  // ✅ Refetch when filters change
-  useEffect(() => {
-    fetchFilteredProducts();
-  }, [q, brand, minPrice, maxPrice]);
-
-  // ✅ Update query string on search submit
-  const handleFilterSubmit = (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    router.push(`/search?q=${encodeURIComponent(q)}`);
+    const query = new URLSearchParams();
+    if (filters.q) query.set('q', filters.q.trim());
+    if (filters.brand) query.set('brand', filters.brand);
+    if (filters.minPrice) query.set('minPrice', filters.minPrice);
+    if (filters.maxPrice) query.set('maxPrice', filters.maxPrice);
+    router.push(`/search?${query.toString()}`);
   };
 
   return (
-    <section className="px-4 py-8 max-w-6xl mx-auto">
-      <h1 className="text-2xl font-bold text-black mb-4">Search & Filter Products</h1>
+    <div className="max-w-6xl mx-auto px-4 py-10">
+      <h1 className="text-2xl font-bold text-black mb-6">Search & Filter Products</h1>
 
-      {/* 🔍 Filters */}
-      <form onSubmit={handleFilterSubmit} className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+      <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
         <input
           type="text"
-          value={q}
-          onChange={(e) => setQ(e.target.value)}
+          value={filters.q}
+          onChange={(e) => handleFilterChange('q', e.target.value)}
           placeholder="Search..."
-          className="px-4 py-2 border border-gray-300 rounded-md w-full"
+          className="border border-gray-300 rounded-md px-4 py-2"
         />
 
         <select
-          value={brand}
-          onChange={(e) => setBrand(e.target.value)}
-          className="px-4 py-2 border border-gray-300 rounded-md w-full"
+          value={filters.brand}
+          onChange={(e) => handleFilterChange('brand', e.target.value)}
+          className="border border-gray-300 rounded-md px-4 py-2"
         >
           <option value="">All Brands</option>
-          {brands.map((b) => (
-            <option key={b._id} value={b.slug}>
-              {b.name}
+          {brands.map((brand) => (
+            <option key={brand._id} value={brand.slug}>
+              {brand.name}
             </option>
           ))}
         </select>
 
         <input
           type="number"
-          value={minPrice}
-          onChange={(e) => setMinPrice(e.target.value)}
+          value={filters.minPrice}
+          onChange={(e) => handleFilterChange('minPrice', e.target.value)}
           placeholder="Min Price"
-          className="px-4 py-2 border border-gray-300 rounded-md w-full"
+          className="border border-gray-300 rounded-md px-4 py-2"
         />
 
         <input
           type="number"
-          value={maxPrice}
-          onChange={(e) => setMaxPrice(e.target.value)}
+          value={filters.maxPrice}
+          onChange={(e) => handleFilterChange('maxPrice', e.target.value)}
           placeholder="Max Price"
-          className="px-4 py-2 border border-gray-300 rounded-md w-full"
+          className="border border-gray-300 rounded-md px-4 py-2"
         />
       </form>
 
-      {/* 🔄 Loading */}
       {loading && <p className="text-gray-500">Loading products...</p>}
-
-      {/* 📦 No results */}
       {!loading && products.length === 0 && (
-        <p className="text-gray-600">No products found.</p>
+        <p className="text-gray-500">No products found.</p>
       )}
 
-      {/* 🛍 Product Grid */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
         {products.map((product) => (
           <ProductCard key={product._id} product={product} />
         ))}
       </div>
-    </section>
+    </div>
   );
 }
