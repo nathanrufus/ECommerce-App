@@ -63,39 +63,6 @@ async function seed() {
     }
 
 
-    // 4. Products
-    const products = [];
-
-    for (let i = 0; i < 10; i++) {
-      const category = faker.helpers.arrayElement(categoryDocs);
-        const brand = faker.helpers.arrayElement(brandDocs);
-        const tags = faker.helpers.arrayElements(tagDocs, 2);
-
-      const product = new Product({
-        name: faker.commerce.productName(),
-        slug: faker.helpers.slugify(faker.commerce.productName().toLowerCase()),
-        description: faker.commerce.productDescription(),
-        short_desc: faker.lorem.sentence(),
-        price: faker.commerce.price(500, 2000),
-        stock_quantity: faker.number.int({ min: 10, max: 100 }),
-        category_id: category._id,
-        brand_id: brand._id,
-        meta_title: faker.lorem.words(5),
-        meta_description: faker.lorem.sentence(),
-        tags: tags.map(tag => tag._id)
-      });
-
-      await product.save();
-
-      await MediaFile.create({
-        product_id: product._id,
-        file_url: 'https://via.placeholder.com/600x400', // placeholder image
-        file_type: 'image/jpeg'
-      });
-
-      products.push(product);
-    }
-
     console.log('✅ Data seeded successfully');
     process.exit();
   } catch (err) {
