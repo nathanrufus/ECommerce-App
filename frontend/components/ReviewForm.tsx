@@ -9,7 +9,6 @@ type ReviewFormProps = {
 }
 
 export default function ReviewForm({ productId, onSuccess }: ReviewFormProps) {
-  const [name, setName] = useState("")
   const [comment, setComment] = useState("")
   const [rating, setRating] = useState(5)
 
@@ -28,10 +27,9 @@ export default function ReviewForm({ productId, onSuccess }: ReviewFormProps) {
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
-          name,
           comment,
           rating,
-          product_id: Number(productId),
+          product_id: productId,
         }),
       })
 
@@ -41,7 +39,6 @@ export default function ReviewForm({ productId, onSuccess }: ReviewFormProps) {
       }
 
       toast.success("Review submitted!")
-      setName("")
       setComment("")
       setRating(5)
       onSuccess()
@@ -52,34 +49,29 @@ export default function ReviewForm({ productId, onSuccess }: ReviewFormProps) {
   }
 
   return (
-    <div className="mt-6 border-t pt-6">
-      <h4 className="text-xl font-semibold mb-4 text-[#1B1D30]">Leave a Review</h4>
+    <div className="mt-10 border-t border-gray-300 pt-6">
+      <h4 className="text-xl font-bold text-[#1B1D30] mb-4">Leave a Review</h4>
       <div className="grid gap-4">
-        <input
-          type="text"
-          placeholder="Your Name"
-          value={name}
-          onChange={e => setName(e.target.value)}
-          className="border px-3 py-2 rounded-md text-sm"
-        />
         <textarea
           placeholder="Your Comment"
           value={comment}
-          onChange={e => setComment(e.target.value)}
-          className="border px-3 py-2 rounded-md text-sm"
+          onChange={(e) => setComment(e.target.value)}
+          className="border border-gray-300 px-4 py-2 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-[#70B244]"
         />
         <select
           value={rating}
-          onChange={e => setRating(Number(e.target.value))}
-          className="border px-3 py-2 rounded-md text-sm"
+          onChange={(e) => setRating(Number(e.target.value))}
+          className="border border-gray-300 px-4 py-2 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-[#70B244]"
         >
-          {[5, 4, 3, 2, 1].map(r => (
-            <option key={r} value={r}>{r} Star{r !== 1 ? "s" : ""}</option>
+          {[5, 4, 3, 2, 1].map((r) => (
+            <option key={r} value={r}>
+              {r} Star{r !== 1 ? "s" : ""}
+            </option>
           ))}
         </select>
         <button
           onClick={handleSubmit}
-          className="bg-[#1B1D30] hover:bg-[#70B244] text-white px-4 py-2 rounded-md"
+          className="bg-[#1B1D30] hover:bg-[#70B244] transition-colors text-white px-4 py-2 rounded-md font-medium text-sm"
         >
           Submit Review
         </button>

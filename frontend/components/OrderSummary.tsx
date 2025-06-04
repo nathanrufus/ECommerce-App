@@ -6,10 +6,10 @@ type OrderSummaryProps = {
   onCheckout: () => void;
 };
 
-const SHIPPING_COST = 5.0;
+
 
 const OrderSummary: React.FC<OrderSummaryProps> = ({ subtotal, onCheckout }) => {
-  const total = subtotal + SHIPPING_COST;
+  const total = subtotal
 
   return (
     <div className="border rounded-lg p-6 shadow-md">
@@ -18,15 +18,15 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({ subtotal, onCheckout }) => 
       <div className="space-y-4">
         <div className="flex justify-between">
           <span>🧾 Subtotal</span>
-          <span>${subtotal.toFixed(2)}</span>
+          <span>KES {subtotal.toFixed(2)}</span>
         </div>
-        <div className="flex justify-between">
+        {/* <div className="flex justify-between">
           <span>🚚 Shipping</span>
           <span>$5.00</span>
-        </div>
+        </div> */}
         <div className="flex justify-between font-bold border-t pt-4">
           <span>🛒 Total</span>
-          <span>${total.toFixed(2)}</span>
+          <span>KES {total.toFixed(2)}</span>
         </div>
         <button
           onClick={onCheckout}

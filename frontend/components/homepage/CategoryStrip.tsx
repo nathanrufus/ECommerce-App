@@ -7,7 +7,7 @@ type Category = {
   _id: string;
   name: string;
   slug: string;
-  thumbnail_url: string;
+  thumbnail_url?: string;
 };
 
 export default function CategoryStrip() {
@@ -15,10 +15,15 @@ export default function CategoryStrip() {
 
   useEffect(() => {
     const fetchCategories = async () => {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/categories`);
-      const data = await res.json();
-      setCategories(data);
+      try {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/categories`);
+        const data = await res.json();
+        setCategories(data.categories || data);
+      } catch (err) {
+        console.error('Failed to fetch categories:', err);
+      }
     };
+
     fetchCategories();
   }, []);
 
@@ -30,16 +35,16 @@ export default function CategoryStrip() {
             <Link
               key={cat._id}
               href={`/products?category=${cat.slug}`}
-              className="flex-shrink-0 bg-white rounded-md shadow-sm p-3 w-36 text-center hover:shadow-lg transition"
+              className="flex-shrink-0 bg-white rounded-md shadow-sm p-3 w-36 text-center hover:shadow-md transition"
             >
               <Image
-                src={cat.thumbnail_url || '/image.jpg'}
+                src={cat.thumbnail_url || '/placeholder.jpg'}
                 alt={cat.name}
                 width={100}
                 height={80}
                 className="mx-auto mb-2 object-cover rounded"
               />
-              <p className="text-sm font-medium text-black">{cat.name}</p>
+              <p className="text-sm font-medium text-[#1B1D30]">{cat.name}</p>
             </Link>
           ))}
         </div>

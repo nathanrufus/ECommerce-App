@@ -18,7 +18,8 @@ exports.createProduct = async (req, res) => {
       category_id,
       brand_id,
       meta_title,
-      meta_description
+      meta_description,
+      tag_ids
     } = req.body;
 
     const slug = slugify(name, { lower: true });
@@ -33,9 +34,11 @@ exports.createProduct = async (req, res) => {
       category_id,
       brand_id,
       meta_title,
-      meta_description
+      meta_description,
+      tags: tag_ids // <-- this line fixes your issue
     });
     await product.save();
+
 
     // Store media file URLs
     if (req.files && req.files.length > 0) {

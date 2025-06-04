@@ -44,11 +44,15 @@ exports.createReview = async (req, res) => {
   }
 };
 
+// controller.getReviewsForProduct
 exports.getReviewsForProduct = async (req, res) => {
   try {
-    const reviews = await Review.find({ product_id: req.params.id })
+    let reviews = await Review.find({ product_id: req.params.id })
       .populate({ path: 'customer_id', select: 'name email' })
       .sort({ createdAt: -1 });
+
+    // Filter out reviews with missing customer data
+    reviews = reviews.filter(r => r.customer_id);
 
     res.json(reviews);
   } catch (err) {

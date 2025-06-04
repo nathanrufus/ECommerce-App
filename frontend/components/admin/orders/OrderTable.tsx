@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import OrderRow from './OrderRow';
 import OrderDetailsModal from './OrderDetailsModal';
-import { useAuth } from '@/context/AuthContext'; // adjust path
+import { useAuth } from '@/context/AuthContext';
 
 type OrderItem = {
   product_id: { name: string };
@@ -45,13 +45,13 @@ export default function OrderTable({ orders }: { orders: Order[] }) {
   };
 
   return (
-    <div className="bg-white shadow-md rounded-lg p-4">
-      <div className="flex justify-between items-center mb-4">
-        <h2 className="text-xl font-semibold text-black">All Orders</h2>
+    <div className="bg-white shadow-md rounded-lg p-4 overflow-x-auto">
+      <div className="flex flex-col md:flex-row justify-between md:items-center gap-4 mb-4">
+        <h2 className="text-xl font-semibold text-[#1B1D30] text-center md:text-left">All Orders</h2>
         <select
           value={filter}
           onChange={(e) => setFilter(e.target.value)}
-          className="border border-gray-300 rounded px-3 py-1 text-sm"
+          className="border border-gray-300 rounded px-3 py-1 text-sm w-full md:w-auto"
         >
           {statuses.map(status => (
             <option key={status} value={status}>
@@ -62,11 +62,10 @@ export default function OrderTable({ orders }: { orders: Order[] }) {
       </div>
 
       <div className="overflow-x-auto">
-        <table className="min-w-full text-sm">
+        <table className="min-w-full text-sm text-center">
           <thead>
             <tr className="bg-gray-200 text-gray-700">
-              <th className="px-4 py-2 text-left">Order ID</th>
-              <th className="px-4 py-2">Customer</th>
+              <th className="px-4 py-2">Order ID</th>
               <th className="px-4 py-2">Total</th>
               <th className="px-4 py-2">Status</th>
               <th className="px-4 py-2">Date</th>

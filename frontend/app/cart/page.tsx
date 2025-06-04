@@ -11,7 +11,7 @@ const CartPage = () => {
   const { cartItems, updateQuantity, removeItem, subtotal, loadFromStorage } = useCartStore();
 
   useEffect(() => {
-    loadFromStorage(); // persist from localStorage on mount
+    loadFromStorage(); 
   }, [loadFromStorage]);
 
  const handleQuantityChange = (id: string, quantity: number) => {
@@ -37,7 +37,7 @@ const handleRemove = (id: string) => {
   }
 
   return (
-    <div className="max-w-6xl mx-auto px-4 py-8 mt-20">
+    <div className="max-w-6xl mx-auto px-4 py-8 min-h-screen">
       <h1 className="text-3xl font-bold mb-2">Your Shopping Cart</h1>
       <p className="text-gray-600 mb-8">
         Review your selected items before proceeding to checkout

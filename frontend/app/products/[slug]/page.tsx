@@ -7,6 +7,8 @@ import { useParams } from "next/navigation";
 import useCartStore from "@/store/cartStore";
 import { toast } from "react-hot-toast";
 import ReviewForm from "@/components/ReviewForm";
+import ProductCard from "@/components/ui/ProductCard";
+
 
 type MediaFile = { file_url: string };
 
@@ -94,9 +96,9 @@ export default function ProductDetailsPage() {
     product.media_files?.[currentImageIndex]?.file_url || "/image.webp";
 
   return (
-    <div className="max-w-5xl mx-auto px-4 py-12 mt-20">
+    <div className="max-w-5xl mx-auto px-4 py-12">
       <Link
-        href="/products"
+        href="/"
         className="inline-block mb-6 px-4 py-2 bg-[#1B1D30] text-white text-sm rounded hover:bg-[#70B244] transition"
       >
         ← Back to Products
@@ -191,32 +193,20 @@ export default function ProductDetailsPage() {
       </div>
 
       {/* Related Products */}
-      <div className="mb-12">
-        <h3 className="text-2xl font-bold mb-6 text-[#1B1D30]">
-          Related Products
-        </h3>
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-          {related.map((rel) => (
-            <Link
-              href={`/products/${rel.slug}`}
-              key={rel._id}
-              className="relative bg-white rounded-xl shadow-sm hover:shadow-lg p-3 transition flex flex-col"
-            >
-              <Image
-                src={rel.media_files?.[0]?.file_url || "/image.webp"}
-                alt={rel.name}
-                width={300}
-                height={200}
-                className="rounded-md object-cover mb-3"
-              />
-              <h4 className="text-sm font-medium text-[#1B1D30] mb-1">
-                {rel.name}
-              </h4>
-              <p className="text-xs text-gray-500">${rel.price.toFixed(2)}</p>
-            </Link>
-          ))}
-        </div>
+     {/* Related Products */}
+    <div className="mb-12">
+      <h3 className="text-2xl font-bold mb-6 text-[#1B1D30]">
+        Related Products
+      </h3>
+      <div className="flex gap-4 overflow-x-auto pb-2">
+        {related.map((rel) => (
+          <div key={rel._id} className="min-w-[220px] flex-shrink-0">
+            <ProductCard product={{ ...rel, media_files: rel.media_files || [] }} />
+          </div>
+        ))}
       </div>
+    </div>
+
     </div>
   );
 }

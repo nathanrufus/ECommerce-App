@@ -87,7 +87,7 @@ export default function OrderDetailsModal({
         </div>
 
         <div className="space-y-2 text-sm">
-          <div><strong>Customer:</strong> {order.customer_id?.name}</div>
+          {/* <div><strong>Customer:</strong> {order.customer_id?.name}</div> */}
           <div><strong>Email:</strong> {order.customer_id?.email}</div>
           <div><strong>Shipping Address:</strong> {order.shipping_address}</div>
           <div className="flex items-center gap-2">

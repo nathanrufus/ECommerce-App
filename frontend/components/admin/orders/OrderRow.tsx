@@ -27,7 +27,6 @@ export default function OrderRow({
   return (
     <tr>
       <td className="px-4 py-2">{order._id}</td>
-      <td className="px-4 py-2">{order.customer_id.name}</td>
       <td className="px-4 py-2">KES {order.total_amount.toLocaleString()}</td>
       <td className="px-4 py-2">{order.status}</td>
       <td className="px-4 py-2">{new Date(order.order_date).toLocaleDateString()}</td>

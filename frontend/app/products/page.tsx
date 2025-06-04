@@ -98,9 +98,9 @@ export default function ProductsPage() {
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-20">
+    <div className="max-w-7xl mx-auto px-4 py-10 min-h-screen">
       <h1 className="text-2xl font-bold text-[#1B1D30] mb-6">
-        {category ? `Products in "${category}"` : 'All Products'}
+        {category ? `Products in ${category}` : 'All Products'}
       </h1>
 
       {/* Filters */}
@@ -117,9 +117,10 @@ export default function ProductsPage() {
             >
               <option value="">All Brands</option>
               {brands.map((brand) => (
-                <option key={brand._id} value={brand._id}>
+                <option key={brand._id} value={brand.slug}>
                   {brand.name}
                 </option>
+
               ))}
             </select>
           </div>

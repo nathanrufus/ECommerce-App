@@ -1,16 +1,16 @@
 const Order = require('../models/order');
 const OrderItem = require('../models/orderitem');
 const Product = require('../models/product');
+const sendOrderConfirmation = require('../utils/sendEmail');
 
 exports.createOrder = async (req, res) => {
   try {
-    const { items, shipping_address } = req.body;
-    const customer_id = req.user.id;
+    const { items, shipping_address, name, email, phone } = req.body;
+    const customer_id = req.user?.id || null;
 
     let total_amount = 0;
     const orderItemIds = [];
 
-    // Validate products and calculate totals
     for (const item of items) {
       const product = await Product.findById(item.product_id);
       if (!product || product.stock_quantity < item.quantity) {
@@ -20,7 +20,6 @@ exports.createOrder = async (req, res) => {
       const lineTotal = item.quantity * product.price;
       total_amount += lineTotal;
 
-      // Create and save order item
       const orderItem = new OrderItem({
         product_id: item.product_id,
         quantity: item.quantity,
@@ -29,22 +28,24 @@ exports.createOrder = async (req, res) => {
       await orderItem.save();
       orderItemIds.push(orderItem._id);
 
-      // Decrease stock
       await Product.findByIdAndUpdate(item.product_id, {
         $inc: { stock_quantity: -item.quantity }
       });
     }
 
-    // Create and save order
     const order = new Order({
       customer_id,
-      order_date: new Date(),
-      status: 'pending',
-      total_amount,
+      name,
+      email,
+      phone,
       shipping_address,
-      items: orderItemIds
+      items: orderItemIds,
+      total_amount,
+      status: 'pending',
     });
+
     await order.save();
+   await sendOrderConfirmation(email, order._id);
 
     res.status(201).json({ message: 'Order placed successfully', order });
   } catch (err) {
@@ -52,6 +53,7 @@ exports.createOrder = async (req, res) => {
     res.status(400).json({ message: err.message });
   }
 };
+
 
 exports.getUserOrders = async (req, res) => {
   try {
@@ -92,6 +94,35 @@ exports.getOrderByIdAdmin = async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Error fetching order' });
+  }
+};
+exports.trackOrderPublic = async (req, res) => {
+  try {
+    const order = await Order.findById(req.params.id)
+      .populate({
+        path: 'items',
+        populate: {
+          path: 'product_id',
+          select: 'name price'
+        }
+      });
+
+    if (!order) {
+      return res.status(404).json({ message: 'Order not found' });
+    }
+
+    res.json({
+        _id: order._id,
+        status: order.status,
+        total_amount: order.total_amount,  // use consistent field
+        placed_at: order.order_date,
+        shipping_address: order.shipping_address,
+        items: order.items
+      });
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Error tracking order' });
   }
 };
 

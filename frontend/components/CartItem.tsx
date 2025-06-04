@@ -9,7 +9,6 @@ type CartItemProps = {
   onRemove: (id: string) => void;
 };
 
-
 const CartItem: React.FC<CartItemProps> = ({
   id,
   name,
@@ -19,30 +18,32 @@ const CartItem: React.FC<CartItemProps> = ({
   onRemove,
 }) => {
   return (
-    <div className="border p-4 rounded-lg mb-4 shadow-sm flex justify-between items-center">
-      <div className="flex items-center gap-4">
-        <div className="w-16 h-16 bg-gray-200 rounded" />
-        <div>
-          <h3 className="font-medium">{name}</h3>
-          <p className="text-gray-600">Price: ${price.toFixed(2)}</p>
-          <div className="mt-2 flex items-center gap-2">
-            <label>Qty:</label>
+    <div className="border border-gray-300 p-4 rounded-xl mb-4 shadow-sm bg-white flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+      <div className="flex items-start sm:items-center gap-4 w-full">
+        <div className="w-16 h-16 bg-gray-100 rounded-lg" />
+        <div className="flex-grow">
+          <h3 className="font-semibold text-[#1B1D30] text-base sm:text-lg">{name}</h3>
+          <p className="text-sm text-gray-600">Price: KES {price.toFixed(2)}</p>
+
+          <div className="mt-2 flex flex-wrap items-center gap-2 text-sm">
+            <label className="text-[#1B1D30]">Qty:</label>
             <input
               type="number"
               value={quantity}
               min={1}
               onChange={(e) => onQuantityChange(id, parseInt(e.target.value))}
-              className="w-16 border px-2 py-1 rounded"
+              className="w-16 border border-gray-300 px-2 py-1 rounded-md text-sm focus:outline-none focus:ring-[#70B244]"
             />
-            <span className="text-sm text-gray-700 ml-2">
-              Subtotal: ${(price * quantity).toFixed(2)}
+            <span className="text-gray-700 ml-2">
+              Subtotal: KES {(price * quantity).toFixed(2)}
             </span>
           </div>
         </div>
       </div>
+
       <button
         onClick={() => onRemove(id)}
-        className="text-red-600 hover:underline text-sm"
+        className="text-sm text-red-600 hover:text-red-800 hover:underline self-end sm:self-auto"
       >
         Remove Item
       </button>
