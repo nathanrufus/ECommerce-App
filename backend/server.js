@@ -1,11 +1,12 @@
-const app = require('./app');
-const connectDB = require('./config/db'); // MongoDB connection function
+require('dotenv').config(); 
 
+const app = require('./app'); 
+const connectDB = require('./config/db');
 const PORT = process.env.PORT || 5000;
 
 (async () => {
   try {
-    await connectDB(); // Connect to MongoDB Atlas
+    await connectDB();
     app.listen(PORT, () => {
       console.log(`🚀 Server running on http://localhost:${PORT}`);
     });
