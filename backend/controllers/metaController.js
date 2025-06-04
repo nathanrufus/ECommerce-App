@@ -28,6 +28,32 @@ exports.createCategory = async (req, res) => {
     res.status(500).json({ message: 'Error creating category' });
   }
 };
+exports.updateCategory = async (req, res) => {
+  try {
+    const { name, parent_id } = req.body;
+    const slug = require('slugify')(name, { lower: true });
+    const categoryId = req.params.id;
+
+    const update = {
+      name,
+      slug,
+      parent_id: parent_id || null,
+    };
+
+    if (req.file) {
+      update.thumbnail_url = req.file.path;
+    }
+
+    const updated = await Category.findByIdAndUpdate(categoryId, update, { new: true });
+
+    if (!updated) return res.status(404).json({ message: 'Category not found' });
+
+    res.json({ category: updated });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Error updating category' });
+  }
+};
 
 exports.createBrand = async (req, res) => {
   try {

@@ -1,4 +1,7 @@
 import CategoryForm from '@/components/admin/CategoryForm';
 export default function Page() {
-  return <CategoryForm />;
+  return (
+    <div className=' min-h-screen'><CategoryForm /></div>
+  )
+  
 }

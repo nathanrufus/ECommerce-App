@@ -13,6 +13,13 @@ router.post('/tags', authMiddleware, roleMiddleware('admin'), controller.createT
 router.delete('/categories/:id', authMiddleware, roleMiddleware('admin'), controller.deleteCategory);
 router.delete('/brands/:id', authMiddleware, roleMiddleware('admin'), controller.deleteBrand);
 router.delete('/tags/:id',authMiddleware, roleMiddleware('admin'), controller.deleteTag);
+router.put(
+  '/categories/:id',
+  authMiddleware,
+  roleMiddleware('admin'),
+  upload.single('thumbnail'),
+  controller.updateCategory
+);
 
 
 // Public fetch routes

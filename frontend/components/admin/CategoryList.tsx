@@ -82,14 +82,21 @@ export default function CategoryList() {
               <td className="p-3">
                 {new Date(cat.createdAt).toLocaleDateString()}
               </td>
-              <td className="p-3">
-                <button
-                  onClick={() => handleDelete(cat._id)}
-                  className="text-red-600 hover:underline"
-                >
-                  Delete
-                </button>
-              </td>
+             <td className="p-3 flex gap-4">
+              <Link
+                href={`/admin/categories/${cat._id}/edit`}
+                className="text-blue-600 hover:underline"
+              >
+                Edit
+              </Link>
+              <button
+                onClick={() => handleDelete(cat._id)}
+                className="text-red-600 hover:underline"
+              >
+                Delete
+              </button>
+            </td>
+
             </tr>
           ))}
         </tbody>
