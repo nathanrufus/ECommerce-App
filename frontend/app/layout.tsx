@@ -1,17 +1,15 @@
-// app/layout.tsx
 import type { Metadata } from "next";
 import { Inter, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { Toaster } from 'react-hot-toast';
-import { AuthProvider } from "@/context/AuthContext" 
-import Image from "next/image";
+import { AuthProvider } from "@/context/AuthContext";
 import { FaWhatsapp } from "react-icons/fa";
-
 
 import TopBar from "@/components/layout/TopBar";
 import Header from "@/components/layout/Header";
 import NavMenu from "@/components/layout/NavMenu";
 import Footer from "@/components/layout/Footer";
+import AppLoader from "@/components/layout/AppLoader"; // 💡 new
 
 const inter = Inter({
   subsets: ["latin"],
@@ -42,18 +40,18 @@ export default function RootLayout({
     <html lang="en" className={`${inter.variable} ${jetbrains.variable}`}>
       <body className="bg-background text-foreground antialiased font-sans">
         <AuthProvider>
-        <div className="fixed top-0 left-0 w-full z-50">
-          
-          <TopBar />
-          <Header />
-          <NavMenu />
-        </div>
-                    <main className="pt-32">
-          {children}
-        </main>
+          <div className="fixed top-0 left-0 w-full z-50">
+            <TopBar />
+            <Header />
+            <NavMenu />
+          </div>
+
+          <AppLoader>
+            <main className="pt-32">{children}</main>
+          </AppLoader>
 
           <Toaster position="top-right" />
-          {/* WhatsApp Floating Button */}
+
           <a
             href={`https://wa.me/${process.env.NEXT_PUBLIC_WHATSAPP_NUMBER}?text=${encodeURIComponent(
               "Hi! I need help with a product on Kwalas Tech."
@@ -62,15 +60,13 @@ export default function RootLayout({
             rel="noopener noreferrer"
             className="fixed bottom-6 right-6 bg-green-500 hover:bg-green-600 text-white p-3 rounded-full shadow-lg z-50 transition"
             aria-label="Chat with us on WhatsApp"
-          >     
-          < FaWhatsapp className="w-6 h-6" />
+          >
+            <FaWhatsapp className="w-6 h-6" />
           </a>
 
           <Footer />
         </AuthProvider>
-           
       </body>
     </html>
   );
 }
-

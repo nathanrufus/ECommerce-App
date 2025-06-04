@@ -1,7 +1,6 @@
 const Order = require('../models/order');
 const OrderItem = require('../models/orderitem');
 const Product = require('../models/product');
-const sendOrderConfirmation = require('../utils/sendEmail');
 
 exports.createOrder = async (req, res) => {
   try {
@@ -45,7 +44,6 @@ exports.createOrder = async (req, res) => {
     });
 
     await order.save();
-   await sendOrderConfirmation(email, order._id);
 
     res.status(201).json({ message: 'Order placed successfully', order });
   } catch (err) {

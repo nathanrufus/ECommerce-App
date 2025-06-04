@@ -85,11 +85,11 @@ export default function ProductCard({ product }: { product: Product }) {
     <div className="bg-white border border-gray-200 rounded-2xl hover:shadow-md transition-all p-5 flex flex-col group relative overflow-hidden min-h-[360px]">
 
       {/* Tags (top-left) */}
-      {Array.isArray(product.tags) && product.tags.length > 0 && (
-        <div className="absolute -top-1 -left-1 flex flex-wrap gap-1 z-10">
-          {product.tags.map((tag, i) => (
+     {Array.isArray(product.tags) && product.tags.length > 0 && (
+        <div className="absolute top-2 left-2 flex flex-wrap gap-1 z-10">
+          {product.tags.map((tag) => (
             <span
-              key={`${tag.name}-${i}`}
+              key={tag._id}
               className="text-[10px] font-bold bg-black text-white px-2 py-0.5 rounded-full"
             >
               {tag.name}
@@ -110,15 +110,17 @@ export default function ProductCard({ product }: { product: Product }) {
       </button>
 
       {/* Product Image with Dots */}
-      <div className="relative w-full h-56 mb-4 overflow-hidden rounded-lg bg-gray-100">
+      <div className="relative w-full aspect-[4/3] bg-gray-100 rounded-lg overflow-hidden">
         <Image
           key={activeImage}
           src={activeImage}
           alt={product.name}
           fill
           unoptimized
+          loading="lazy" // <-- this ensures image lazy loading
           className="object-cover transition-opacity duration-700 ease-in-out"
         />
+
         {images.length > 1 && (
           <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 flex gap-1">
             {images.map((_, i) => (

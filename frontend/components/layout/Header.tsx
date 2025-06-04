@@ -7,7 +7,7 @@ import { FiShoppingCart, FiHeart, FiUser, FiLogOut } from "react-icons/fi";
 import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
 import useCartStore from "@/store/cartStore";
-import useWishlistStore from "@/store/wishlistStore"; // ✅ import wishlist store
+import useWishlistStore from "@/store/wishlistStore";
 
 export default function Header() {
   const { user, logout, loading } = useAuth();
@@ -22,10 +22,9 @@ export default function Header() {
   const wishlistCount = wishlist.length;
 
   useEffect(() => {
-    loadWishlist(); // ✅ load wishlist on mount
+    loadWishlist();
   }, [loadWishlist]);
 
-  // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
@@ -40,7 +39,7 @@ export default function Header() {
   }, []);
 
   return (
-    <header className="bg-black text-white sticky top-0 z-50 shadow-md">
+    <header className="bg-green-900 text-white sticky top-0 z-50 shadow-md">
       <div className="max-w-7xl mx-auto flex items-center justify-between px-4 py-3">
         {/* Logo and Title */}
         <Link href="/" className="flex items-center space-x-2">
@@ -49,7 +48,7 @@ export default function Header() {
             alt="Kwalas Computer"
             width={36}
             height={36}
-            className="rounded-full border-2 border-white shadow-sm"
+            className="rounded-full border-2 border-white shadow-sm bg-white p-0.5"
           />
           <span className="text-lg font-semibold tracking-wide">
             Kwalas Computers

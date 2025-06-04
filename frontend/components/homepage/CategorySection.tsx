@@ -16,19 +16,16 @@ type Product = {
   media_files: { file_url: string }[];
 };
 
-export default function CategorySection({ category }: { category: Category }) {
-  const [products, setProducts] = useState<Product[]>([]);
-
-  useEffect(() => {
-    fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/products/category/${category.slug}`)
-      .then(res => res.json())
-      .then(data => setProducts(data.slice(0, 8)));
-  }, [category.slug]);
-
+export default function CategorySection({
+  category,
+  products,
+}: {
+  category: Category;
+  products: Product[];
+}) {
   return (
     <section className="py-6 bg-white">
       <div className="max-w-7xl mx-auto px-4">
-        {/* ✅ Compact Green Header */}
         <div className="bg-green-600 rounded-md px-4 py-2 mb-4 flex flex-col sm:flex-row sm:items-center sm:justify-between text-white text-sm sm:text-base">
           <h2 className="font-semibold">{category.name}</h2>
           <Link
@@ -39,10 +36,9 @@ export default function CategorySection({ category }: { category: Category }) {
           </Link>
         </div>
 
-        {/* 🛒 Product Carousel - no visible scrollbar */}
         <div className="overflow-x-auto scrollbar-hide">
           <div className="flex gap-4 w-max min-w-full">
-            {products.map(product => (
+            {products.map((product) => (
               <div
                 key={product._id}
                 className="min-w-[250px] max-w-[300px] flex-shrink-0"
@@ -56,3 +52,4 @@ export default function CategorySection({ category }: { category: Category }) {
     </section>
   );
 }
+

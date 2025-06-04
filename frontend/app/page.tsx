@@ -1,4 +1,3 @@
-// app/page.tsx
 'use client';
 import React, { useEffect, useState } from 'react';
 import HeroBanner from '@/components/homepage/HeroBanner';
@@ -13,27 +12,48 @@ type Category = {
   name: string;
   slug: string;
 };
+type Product = {
+  _id: string;
+  name: string;
+  slug: string;
+  price: number;
+  media_files: { file_url: string }[];
+};
 
 export default function HomePage() {
-  const [categories, setCategories] = useState<Category[]>([]);
+  const [categoryBlocks, setCategoryBlocks] = useState<
+    { category: Category; products: Product[] }[]
+  >([]);
 
   useEffect(() => {
-    fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/categories`)
-      .then(res => res.json())
-      .then(data => setCategories(data));
+    const fetchData = async () => {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/categories`);
+      const categories = await res.json();
+
+      const blocks = await Promise.all(
+        categories.map(async (cat: Category) => {
+          const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/products/category/${cat.slug}`);
+          const products = await res.json();
+          return { category: cat, products: products.slice(0, 8) };
+        })
+      );
+
+      setCategoryBlocks(blocks);
+    };
+
+    fetchData();
   }, []);
 
   return (
     <main className="min-h-screen bg-white text-black">
-      
       <HeroBanner />
       <CategoryStrip />
-      {categories.map((cat) => (
-       <CategorySection key={cat._id} category={cat} />
+      {categoryBlocks.map(({ category, products }) => (
+        <CategorySection key={category._id} category={category} products={products} />
       ))}
       <InfoStrip />
       <NewsletterSignup />
-      
     </main>
   );
 }
+

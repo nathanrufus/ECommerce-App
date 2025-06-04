@@ -37,13 +37,14 @@ export default function CategoryStrip() {
               href={`/products?category=${cat.slug}`}
               className="flex-shrink-0 bg-white rounded-md shadow-sm p-3 w-36 text-center hover:shadow-md transition"
             >
-              <Image
-                src={cat.thumbnail_url || '/placeholder.jpg'}
-                alt={cat.name}
-                width={100}
-                height={80}
-                className="mx-auto mb-2 object-cover rounded"
-              />
+            <Image
+              src={cat.thumbnail_url || '/placeholder.jpg'}
+              alt={cat.name}
+              width={100}
+              height={80}
+              loading="lazy" // <-- Lazy loading applied here
+              className="mx-auto mb-2 object-cover rounded"
+            />
               <p className="text-sm font-medium text-[#1B1D30]">{cat.name}</p>
             </Link>
           ))}

@@ -114,14 +114,15 @@ export default function ProductDetailsPage() {
         {/* Image Carousel */}
         <div>
           <div className="relative w-full aspect-[4/3] bg-gray-100 rounded-lg overflow-hidden">
-            <Image
-              key={currentImage}
-              src={currentImage}
-              alt={product.name}
-              fill
-              unoptimized
-              className="object-contain transition-opacity duration-700 ease-in-out"
-            />
+           <Image
+            key={currentImage}
+            src={currentImage}
+            alt={product.name}
+            fill
+            unoptimized
+            loading="lazy" // <--- Lazy loading applied here
+            className="object-contain transition-opacity duration-700 ease-in-out"
+          />
           </div>
         </div>
 
