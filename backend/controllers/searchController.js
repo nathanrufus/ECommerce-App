@@ -11,16 +11,26 @@ const MediaFile = require('../models/mediafile');
 // ------------------------------
 exports.searchProducts = async (req, res) => {
   try {
-    const q = req.query.q?.trim();
-    if (!q) return res.status(400).json({ message: 'Query (q) is required' });
+    const qRaw = req.query.q;
+
+    // 🔐 Validate input
+    if (!qRaw || typeof qRaw !== 'string') {
+      return res.status(400).json({ message: 'Query (q) is required' });
+    }
+
+    const q = qRaw.trim();
+    if (q.length < 2) {
+      return res.status(400).json({ message: 'Search query too short' });
+    }
 
     const cacheKey = `search:q=${q}`;
     const cached = await redis.get(cacheKey);
     if (cached) return res.json(JSON.parse(cached));
 
-    // Case-insensitive $regex search
     const regex = new RegExp(q, 'i');
-    const results = await Product.find({
+
+    // 🧠 Only fetch top 10 results (customize if needed)
+    const products = await Product.find({
       $or: [
         { name: regex },
         { description: regex },
@@ -29,14 +39,26 @@ exports.searchProducts = async (req, res) => {
         { meta_description: regex }
       ]
     })
+      .limit(10)
+      .sort({ createdAt: -1 })
       .populate('category_id')
       .populate('brand_id')
       .lean();
 
-    await redis.set(cacheKey, JSON.stringify(results), 'EX', 300); // 5 mins
-    res.json(results);
+    // ✅ Optional: fetch media_files for preview
+    const productIds = products.map((p) => p._id);
+    const mediaFiles = await MediaFile.find({ product_id: { $in: productIds } }).lean();
+
+    const enriched = products.map((p) => ({
+      ...p,
+      media_files: mediaFiles.filter(m => m.product_id.toString() === p._id.toString())
+    }));
+
+    await redis.set(cacheKey, JSON.stringify(enriched), 'EX', 300); // 5 minutes
+
+    res.json(enriched);
   } catch (err) {
-    console.error(err);
+    console.error('Search error:', err);
     res.status(500).json({ message: 'Search failed' });
   }
 };
@@ -50,8 +72,20 @@ exports.filterProducts = async (req, res) => {
     const cached = await redis.get(cacheKey);
     if (cached) return res.json(JSON.parse(cached));
 
-    const { category, brand, minPrice, maxPrice, tag } = req.query;
+    const { category, brand, minPrice, maxPrice, tag, q } = req.query;
     const filter = {};
+
+    // ✅ Keyword search (optional)
+    if (q && typeof q === 'string' && q.trim().length >= 2) {
+      const regex = new RegExp(q.trim(), 'i');
+      filter.$or = [
+        { name: regex },
+        { description: regex },
+        { short_desc: regex },
+        { meta_title: regex },
+        { meta_description: regex },
+      ];
+    }
 
     // ✅ Convert category slug to _id
     if (category) {
@@ -60,7 +94,7 @@ exports.filterProducts = async (req, res) => {
       filter.category_id = catDoc._id;
     }
 
-    // ✅ Convert brand slug to _id (if you're passing slugs for brand too)
+    // ✅ Convert brand slug to _id
     if (brand) {
       const brandDoc = await Brand.findOne({ slug: brand }).lean();
       if (!brandDoc) return res.json([]);
@@ -81,8 +115,10 @@ exports.filterProducts = async (req, res) => {
       if (!tagDoc) return res.json([]);
       products = await Product.find({
         ...filter,
-        tags: tagDoc._id
-      }).populate('category_id brand_id tags').lean();
+        tags: tagDoc._id,
+      })
+        .populate('category_id brand_id tags')
+        .lean();
     } else {
       products = await Product.find(filter)
         .populate('category_id brand_id tags')
@@ -90,18 +126,19 @@ exports.filterProducts = async (req, res) => {
     }
 
     // ✅ Attach media_files
-    const productIds = products.map(p => p._id);
+    const productIds = products.map((p) => p._id);
     const mediaFiles = await MediaFile.find({ product_id: { $in: productIds } }).lean();
 
-    const enriched = products.map(p => ({
+    const enriched = products.map((p) => ({
       ...p,
-      media_files: mediaFiles.filter(m => m.product_id.toString() === p._id.toString())
+      media_files: mediaFiles.filter((m) => m.product_id.toString() === p._id.toString()),
     }));
 
-    await redis.set(cacheKey, JSON.stringify(enriched), 'EX', 300);
+    await redis.set(cacheKey, JSON.stringify(enriched), 'EX', 300); // Cache for 5 min
     res.json(enriched);
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Filter failed' });
   }
 };
+

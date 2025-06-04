@@ -83,13 +83,14 @@ export default function ProductCard({ product }: { product: Product }) {
 
   return (
     <div className="bg-white border border-gray-200 rounded-2xl hover:shadow-md transition-all p-5 flex flex-col group relative overflow-hidden min-h-[360px]">
-     {/* Top Overlay: Tags + Wishlist Icon */}
+
+      {/* Tags (top-left) */}
       {Array.isArray(product.tags) && product.tags.length > 0 && (
-        <div className="absolute top-3 left-3 flex flex-wrap gap-1 z-10">
+        <div className="absolute -top-1 -left-1 flex flex-wrap gap-1 z-10">
           {product.tags.map((tag, i) => (
             <span
               key={`${tag.name}-${i}`}
-              className="text-[10px] font-semibold bg-green-400 text-gray-700 px-2 py-0.5 rounded-full shadow-sm"
+              className="text-[10px] font-bold bg-black text-white px-2 py-0.5 rounded-full"
             >
               {tag.name}
             </span>
@@ -97,7 +98,7 @@ export default function ProductCard({ product }: { product: Product }) {
         </div>
       )}
 
-      {/* Wishlist Icon (Top-Right) */}
+      {/* Wishlist Icon (top-right) */}
       <button
         onClick={handleWishlistToggle}
         className={`absolute top-3 right-3 transition z-10 ${
@@ -107,7 +108,6 @@ export default function ProductCard({ product }: { product: Product }) {
       >
         <FiHeart className="w-5 h-5" />
       </button>
-
 
       {/* Product Image with Dots */}
       <div className="relative w-full h-56 mb-4 overflow-hidden rounded-lg bg-gray-100">

@@ -12,6 +12,7 @@ router.post('/tags', authMiddleware, roleMiddleware('admin'), controller.createT
 // Admin-only delete routes
 router.delete('/categories/:id', authMiddleware, roleMiddleware('admin'), controller.deleteCategory);
 router.delete('/brands/:id', authMiddleware, roleMiddleware('admin'), controller.deleteBrand);
+router.delete('/tags/:id',authMiddleware, roleMiddleware('admin'), controller.deleteTag);
 
 
 // Public fetch routes

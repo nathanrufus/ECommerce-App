@@ -103,6 +103,20 @@ exports.deleteCategory = async (req, res) => {
     res.status(500).json({ message: 'Error deleting category' });
   }
 };
+// ----------------------------
+// DELETE TAG
+// ----------------------------
+exports.deleteTag = async (req, res) => {
+  try {
+    const { id } = req.params;
+    await ProductTag.findByIdAndDelete(id);
+    res.json({ message: 'Tag deleted successfully' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Error deleting tag' });
+  }
+};
+
 
 exports.deleteBrand = async (req, res) => {
   try {
