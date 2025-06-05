@@ -1,3 +1,4 @@
+'use client';
 import React from 'react';
 
 type CartItemProps = {
@@ -18,7 +19,7 @@ const CartItem: React.FC<CartItemProps> = ({
   onRemove,
 }) => {
   return (
-    <div className="border border-gray-300 p-4 rounded-xl mb-4 shadow-sm bg-white flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+    <div className="border border-gray-200 p-4 rounded-xl shadow-sm bg-white flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
       <div className="flex items-start sm:items-center gap-4 w-full">
         <div className="w-16 h-16 bg-gray-100 rounded-lg" />
         <div className="flex-grow">
@@ -32,7 +33,7 @@ const CartItem: React.FC<CartItemProps> = ({
               value={quantity}
               min={1}
               onChange={(e) => onQuantityChange(id, parseInt(e.target.value))}
-              className="w-16 border border-gray-300 px-2 py-1 rounded-md text-sm focus:outline-none focus:ring-[#70B244]"
+              className="w-16 border border-gray-300 px-2 py-1 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-[#70B244]"
             />
             <span className="text-gray-700 ml-2">
               Subtotal: KES {(price * quantity).toFixed(2)}
@@ -41,12 +42,20 @@ const CartItem: React.FC<CartItemProps> = ({
         </div>
       </div>
 
-      <button
-        onClick={() => onRemove(id)}
-        className="text-sm text-red-600 hover:text-red-800 hover:underline self-end sm:self-auto"
-      >
-        Remove Item
-      </button>
+      <div className="flex flex-wrap gap-2 self-end sm:self-auto">
+        <button
+          onClick={() => onRemove(id)}
+          className="px-3 py-1 text-sm text-white bg-red-600 hover:bg-red-700 rounded-md transition"
+        >
+          Remove
+        </button>
+        <button
+          onClick={() => alert('Save for later clicked')}
+          className="px-3 py-1 text-sm text-white bg-blue-950 hover:bg-blue-900 rounded-md transition"
+        >
+          Save for Later
+        </button>
+      </div>
     </div>
   );
 };

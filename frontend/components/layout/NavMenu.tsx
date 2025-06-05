@@ -26,13 +26,12 @@ export default function NavMenu() {
 
   return (
     <>
-      <nav className="bg-gray-100 text-sm text-gray-800 relative z-10 border-b border-gray-200 shadow-sm">
+      <nav className="bg-[#F8FAF8] dark:bg-[#121423] text-sm text-[#1B1D30] dark:text-white relative z-10 border-b border-gray-200 dark:border-[#1B1D30] shadow-sm">
         <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between gap-4 flex-wrap md:flex-nowrap">
-          
           {/* 🔘 Sidebar Toggle */}
           <button
             onClick={() => setSidebarOpen(true)}
-            className="flex items-center gap-2 px-3 py-1.5 border border-gray-300 rounded-md bg-white text-gray-800 hover:border-green-600 hover:text-green-600 transition font-medium shadow-sm shrink-0"
+            className="flex items-center gap-2 px-3 py-1.5 border border-[#70B244] rounded-md bg-white dark:bg-[#1B1D30] text-[#1B1D30] dark:text-white hover:bg-[#70B244] hover:text-white transition font-medium shadow-sm shrink-0"
           >
             <FiMenu className="w-5 h-5" />
             <span className="hidden sm:inline">Browse Categories</span>
@@ -51,7 +50,7 @@ export default function NavMenu() {
                 <Link
                   key={link.name}
                   href={link.href}
-                  className="text-gray-700 hover:text-green-600 transition font-medium shrink-0"
+                  className="text-[#1B1D30] dark:text-white hover:text-[#70B244] transition font-medium shrink-0"
                 >
                   {link.name}
                 </Link>
@@ -59,12 +58,12 @@ export default function NavMenu() {
             </div>
           </div>
 
-          {/* 👑 Admin Menu: stays pinned to right */}
+          {/* 👑 Admin Menu */}
           {isAdmin && (
             <div className="relative shrink-0">
               <button
                 onClick={() => setAdminMenuOpen(!adminMenuOpen)}
-                className="flex items-center gap-2 px-3 py-1.5 border border-black rounded-md bg-white text-black hover:bg-green-50 hover:text-green-700 transition font-semibold shadow-sm"
+                className="flex items-center gap-2 px-3 py-1.5 border border-[#1B1D30] dark:border-white rounded-md bg-white dark:bg-[#1B1D30] text-[#1B1D30] dark:text-white hover:bg-[#70B244]/10 hover:text-[#70B244] transition font-semibold shadow-sm"
               >
                 <FiUser className="w-4 h-4" />
                 Admin Menu
@@ -72,8 +71,8 @@ export default function NavMenu() {
               </button>
 
               {adminMenuOpen && (
-                <div className="absolute right-0 mt-2 w-56 rounded-lg shadow-lg bg-white border border-gray-200 z-50">
-                  <ul className="text-sm text-gray-800 divide-y divide-gray-100">
+                <div className="absolute right-0 mt-2 w-56 rounded-lg shadow-lg bg-white dark:bg-[#1B1D30] border border-gray-200 dark:border-gray-700 z-50">
+                  <ul className="text-sm text-[#1B1D30] dark:text-white divide-y divide-gray-100 dark:divide-[#2A2D45]">
                     {[
                       { name: 'All Products', href: '/admin/products' },
                       { name: 'Add Product', href: '/admin/products/new' },
@@ -88,7 +87,7 @@ export default function NavMenu() {
                         <Link
                           href={link.href}
                           onClick={() => setAdminMenuOpen(false)}
-                          className="block px-4 py-2 hover:bg-green-100 hover:text-green-700 transition"
+                          className="block px-4 py-2 hover:bg-[#70B244]/10 hover:text-[#70B244] transition"
                         >
                           {link.name}
                         </Link>
@@ -106,9 +105,9 @@ export default function NavMenu() {
       {sidebarOpen && (
         <>
           <div className="fixed inset-0 bg-black/20 z-40" onClick={closeSidebar} />
-          <aside className="fixed top-0 left-0 h-full w-72 bg-gradient-to-b from-white via-gray-50 to-gray-100 shadow-2xl z-50 rounded-r-lg transform transition-transform duration-300 overflow-y-auto">
-            <div className="flex items-center justify-between p-4 border-b border-gray-200">
-              <h2 className="text-xl font-semibold text-gray-800 tracking-wide">📂 Categories</h2>
+          <aside className="fixed top-0 left-0 h-full w-72 bg-gradient-to-b from-white via-[#F8FAF8] to-[#E9F1E9] dark:from-[#1B1D30] dark:via-[#202439] dark:to-[#1E2233] shadow-2xl z-50 rounded-r-xl transform transition-transform duration-300 overflow-y-auto">
+            <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-600">
+              <h2 className="text-xl font-semibold text-[#1B1D30] dark:text-white tracking-wide">📂 Categories</h2>
               <button
                 onClick={closeSidebar}
                 className="text-gray-500 hover:text-red-500 text-2xl font-bold focus:outline-none"
@@ -125,7 +124,7 @@ export default function NavMenu() {
                     <Link
                       href={`/products?category=${cat.slug}`}
                       onClick={closeSidebar}
-                      className="block px-3 py-2 rounded-md text-gray-800 hover:bg-green-100 hover:text-green-700 font-medium transition"
+                      className="block px-3 py-2 rounded-md text-[#1B1D30] dark:text-white hover:bg-[#70B244]/20 hover:text-[#70B244] font-medium transition"
                     >
                       {cat.name}
                     </Link>

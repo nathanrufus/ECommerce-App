@@ -13,17 +13,20 @@ export default function SearchBox() {
   };
 
   return (
-    <form onSubmit={handleSearch} className="flex w-full max-w-md mx-auto mt-10 py-4">
+    <form
+      onSubmit={handleSearch}
+      className="flex w-full max-w-md mx-auto mt-10 py-4 px-2 sm:px-0"
+    >
       <input
         type="text"
         placeholder="Search products..."
         value={q}
         onChange={(e) => setQ(e.target.value)}
-        className="w-full px-4 py-2 border border-gray-300 rounded-l-md focus:outline-none"
+        className="w-full px-4 py-2 rounded-l-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-[#1B1D30] text-[#1B1D30] dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-[#70B244] focus:outline-none transition"
       />
       <button
         type="submit"
-        className="px-4 py-2 bg-green-600 text-white font-semibold rounded-r-md hover:bg-green-700"
+        className="px-5 py-2 bg-[#70B244] text-white font-medium rounded-r-md hover:bg-[#5da239] transition"
       >
         Search
       </button>

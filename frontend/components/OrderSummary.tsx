@@ -1,4 +1,4 @@
-
+'use client';
 import React from 'react';
 
 type OrderSummaryProps = {
@@ -6,31 +6,27 @@ type OrderSummaryProps = {
   onCheckout: () => void;
 };
 
-
-
 const OrderSummary: React.FC<OrderSummaryProps> = ({ subtotal, onCheckout }) => {
-  const total = subtotal
+  const total = subtotal;
 
   return (
-    <div className="border rounded-lg p-6 shadow-md">
-      <h2 className="text-xl font-semibold mb-2">Order Summary</h2>
+    <div className="border border-gray-200 rounded-lg p-6 shadow-md bg-white">
+      <h2 className="text-xl font-semibold text-[#1B1D30] mb-2">Order Summary</h2>
       <p className="text-gray-600 mb-4">Finalize your order details</p>
       <div className="space-y-4">
         <div className="flex justify-between">
           <span>🧾 Subtotal</span>
           <span>KES {subtotal.toFixed(2)}</span>
         </div>
-        {/* <div className="flex justify-between">
-          <span>🚚 Shipping</span>
-          <span>$5.00</span>
-        </div> */}
+
         <div className="flex justify-between font-bold border-t pt-4">
           <span>🛒 Total</span>
           <span>KES {total.toFixed(2)}</span>
         </div>
+
         <button
           onClick={onCheckout}
-          className="w-full mt-6 bg-black text-white py-2 px-4 rounded hover:bg-gray-800"
+          className="w-full mt-6 bg-[#70B244] text-white py-2 px-4 rounded-md font-medium hover:bg-[#5da239] transition"
         >
           Proceed to Checkout
         </button>

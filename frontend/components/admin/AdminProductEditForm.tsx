@@ -156,7 +156,7 @@ export default function AdminProductEditForm() {
   if (loading) return <p className="text-center mt-10">Loading...</p>;
 
   return (
-    <div className="max-w-2xl mx-auto p-6 bg-white shadow rounded-xl mt-10">
+    <div className="max-w-2xl mx-auto p-6 bg-white shadow rounded-xl mt-10 min-h-screen">
       <h2 className="text-2xl font-semibold text-gray-800 mb-6">Edit Product</h2>
       {success && (
         <div className="bg-green-100 border border-green-400 text-green-700 p-2 rounded mb-4">

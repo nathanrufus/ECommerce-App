@@ -28,24 +28,26 @@ export default function CategoryStrip() {
   }, []);
 
   return (
-    <section className="bg-gray-50 py-4">
-      <div className="max-w-7xl mx-auto px-4 overflow-x-auto no-scrollbar">
+    <section className="bg-[#F8FAF8] dark:bg-[#121423] py-5">
+      <div className="max-w-7xl mx-auto px-4 overflow-x-auto scrollbar-hide">
         <div className="flex gap-4">
           {categories.map((cat) => (
             <Link
               key={cat._id}
               href={`/products?category=${cat.slug}`}
-              className="flex-shrink-0 bg-white rounded-md shadow-sm p-3 w-36 text-center hover:shadow-md transition"
+              className="flex-shrink-0 w-36 bg-white dark:bg-[#1B1D30] rounded-lg shadow-sm hover:shadow-lg transition p-3 text-center border border-gray-200 dark:border-gray-700 hover:border-[#70B244]"
             >
-            <Image
-              src={cat.thumbnail_url || '/placeholder.jpg'}
-              alt={cat.name}
-              width={100}
-              height={80}
-              loading="lazy" // <-- Lazy loading applied here
-              className="mx-auto mb-2 object-cover rounded"
-            />
-              <p className="text-sm font-medium text-[#1B1D30]">{cat.name}</p>
+              <Image
+                src={cat.thumbnail_url || '/placeholder.jpg'}
+                alt={cat.name}
+                width={100}
+                height={80}
+                loading="lazy"
+                className="mx-auto mb-2 rounded-md object-cover aspect-[5/4]"
+              />
+              <p className="text-sm font-medium text-[#1B1D30] dark:text-white truncate">
+                {cat.name}
+              </p>
             </Link>
           ))}
         </div>
