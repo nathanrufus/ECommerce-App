@@ -149,3 +149,29 @@ exports.updateOrderStatus = async (req, res) => {
     res.status(500).json({ message: 'Error updating order status' });
   }
 };
+// DELETE ORDER
+exports.deleteOrder = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const order = await Order.findById(id);
+    if (!order) return res.status(404).json({ message: 'Order not found' });
+
+    // Delete related order items
+    await OrderItem.deleteMany({ _id: { $in: order.items } });
+
+    // Optionally restock products (optional logic)
+    // for (const item of order.items) {
+    //   await Product.findByIdAndUpdate(item.product_id, {
+    //     $inc: { stock_quantity: item.quantity }
+    //   });
+    // }
+
+    await Order.findByIdAndDelete(id);
+
+    res.json({ message: 'Order deleted successfully' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Error deleting order' });
+  }
+};

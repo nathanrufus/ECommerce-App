@@ -24,6 +24,7 @@ type Order = {
 const statuses = ['all', 'pending', 'shipped', 'delivered', 'cancelled'];
 
 export default function OrderTable({ orders }: { orders: Order[] }) {
+  const { token } = useAuth();
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [filter, setFilter] = useState('all');
   const [localOrders, setLocalOrders] = useState<Order[]>(orders);
@@ -33,14 +34,36 @@ export default function OrderTable({ orders }: { orders: Order[] }) {
     : localOrders.filter(order => order.status === filter);
 
   const refreshOrders = async () => {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/admin/orders`, {
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem('token')}`,
-      },
-    });
-    if (res.ok) {
-      const data = await res.json();
-      setLocalOrders(data);
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/admin/orders`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setLocalOrders(data);
+      }
+    } catch (err) {
+      console.error('Error refreshing orders:', err);
+    }
+  };
+
+  const handleDelete = async (orderId: string) => {
+    if (!confirm('Delete this order?')) return;
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/orders/${orderId}`, {
+        method: 'DELETE',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!res.ok) throw new Error('Failed to delete order');
+
+      setLocalOrders((prev) => prev.filter((order) => order._id !== orderId));
+    } catch (err) {
+      console.error('Error deleting order:', err);
     }
   };
 
@@ -78,6 +101,7 @@ export default function OrderTable({ orders }: { orders: Order[] }) {
                 key={order._id}
                 order={order}
                 onView={() => setSelectedOrder(order)}
+                onDelete={() => handleDelete(order._id)} // ✅ Delete is now active
               />
             ))}
           </tbody>

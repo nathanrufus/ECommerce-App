@@ -20,9 +20,11 @@ type Order = {
 export default function OrderRow({
   order,
   onView,
+  onDelete,
 }: {
   order: Order;
   onView: () => void;
+  onDelete: () => void;
 }) {
   return (
     <tr>
@@ -30,12 +32,18 @@ export default function OrderRow({
       <td className="px-4 py-2">KES {order.total_amount.toLocaleString()}</td>
       <td className="px-4 py-2">{order.status}</td>
       <td className="px-4 py-2">{new Date(order.order_date).toLocaleDateString()}</td>
-      <td className="px-4 py-2">
+      <td className="px-4 py-2 flex gap-2">
         <button
           onClick={onView}
           className="text-blue-600 hover:underline text-sm"
         >
           View
+        </button>
+        <button
+          onClick={onDelete}
+          className="text-red-600 hover:underline text-sm"
+        >
+          Delete
         </button>
       </td>
     </tr>
