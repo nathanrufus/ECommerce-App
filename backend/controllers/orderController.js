@@ -1,6 +1,7 @@
 const Order = require('../models/order');
 const OrderItem = require('../models/orderitem');
 const Product = require('../models/product');
+const sendOrderEmail = require('../utils/sendEmail');
 
 exports.createOrder = async (req, res) => {
   try {
@@ -45,6 +46,8 @@ exports.createOrder = async (req, res) => {
 
     await order.save();
 
+    await sendOrderEmail({ to: email, orderId: order._id });
+
     res.status(201).json({ message: 'Order placed successfully', order });
   } catch (err) {
     console.error(err);
@@ -85,7 +88,7 @@ exports.getOrderByIdAdmin = async (req, res) => {
         path: 'items',
         populate: { path: 'product_id', select: 'name price' },
       })
-      .populate('customer_id', 'name email');
+      .populate('customer_id', 'name phone email');
 
     if (!order) return res.status(404).json({ message: 'Order not found' });
     res.json(order);

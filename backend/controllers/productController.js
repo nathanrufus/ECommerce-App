@@ -61,8 +61,25 @@ exports.createProduct = async (req, res) => {
 exports.updateProduct = async (req, res) => {
   try {
     const id = req.params.id;
-    const updates = req.body;
+    const updates = { ...req.body };
 
+    // Parse tag_ids if it's coming as a string (e.g., from FormData)
+    if (typeof updates.tag_ids === 'string') {
+      try {
+        updates.tag_ids = JSON.parse(updates.tag_ids);
+      } catch (err) {
+        console.warn('tag_ids not parsed as JSON, assuming form-encoded array');
+        updates.tag_ids = [updates.tag_ids]; // fallback
+      }
+    }
+
+    // Map tag_ids to tags
+    if (updates.tag_ids) {
+      updates.tags = updates.tag_ids;
+      delete updates.tag_ids;
+    }
+
+    // Slugify if name is updated
     if (updates.name) {
       updates.slug = slugify(updates.name, { lower: true });
     }
@@ -72,9 +89,9 @@ exports.updateProduct = async (req, res) => {
     if (req.files && req.files.length > 0) {
       const media = req.files.map(file => ({
         product_id: id,
-        file_url: file.path,             // ✅ Use Cloudinary path
+        file_url: file.path,
         file_type: file.mimetype,
-        public_id: file.filename         // ✅ Save for deletions
+        public_id: file.filename
       }));
       await MediaFile.insertMany(media);
     }

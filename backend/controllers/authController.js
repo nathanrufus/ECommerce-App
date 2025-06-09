@@ -84,3 +84,66 @@ exports.login = async (req, res) => {
     res.status(500).json({ message: 'Server error' });
   }
 };
+// GET all users (admin only)
+exports.getAllUsers = async (req, res) => {
+  try {
+    const users = await User.find({}, 'name email role'); // no password
+    res.json(users);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Error fetching users' });
+  }
+};
+
+// Promote a user to admin
+exports.promoteUser = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const updated = await User.findByIdAndUpdate(id, { role: 'admin' }, { new: true });
+
+    if (!updated) return res.status(404).json({ message: 'User not found' });
+
+    res.json({ message: 'User promoted to admin', user: updated });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Error promoting user' });
+  }
+};
+
+// Authenticated user (admin) changes own password
+exports.changeOwnPassword = async (req, res) => {
+  try {
+    const { currentPassword, newPassword } = req.body;
+    const userId = req.user.id;
+
+    const user = await User.findById(userId);
+    if (!user) return res.status(404).json({ message: 'User not found' });
+
+    const isValid = await bcrypt.compare(currentPassword, user.password);
+    if (!isValid) return res.status(400).json({ message: 'Incorrect current password' });
+
+    if (!newPassword || newPassword.length < 6) {
+      return res.status(400).json({ message: 'Password must be at least 6 characters' });
+    }
+
+    const hashed = await bcrypt.hash(newPassword, 10);
+    user.password = hashed;
+    await user.save();
+
+    res.json({ message: 'Password updated successfully' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+exports.demoteUser = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const updated = await User.findByIdAndUpdate(id, { role: 'customer' }, { new: true });
+    if (!updated) return res.status(404).json({ message: 'User not found' });
+    res.json({ message: 'User demoted successfully', user: updated });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Error demoting user' });
+  }
+};
