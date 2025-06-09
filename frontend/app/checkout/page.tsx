@@ -69,6 +69,8 @@ export default function CheckoutPage() {
       if (!res.ok) throw new Error(data.message || "Failed to place order")
 
       toast.success("Order placed successfully!")
+      toast.success("Order ID has been sent to your email.");
+
       useCartStore.getState().loadFromStorage()
       useCartStore.setState({ cartItems: [], subtotal: 0 })
       localStorage.removeItem("cart")

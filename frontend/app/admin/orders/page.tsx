@@ -5,8 +5,6 @@ import { cookies } from 'next/headers';
 export default async function OrdersPage() {
 const cookieStore = await cookies();
   const token = cookieStore.get('token')?.value; 
-  console.log('TOKEN:', token);
-
 
   const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/admin/orders`, {
     headers: { Authorization: `Bearer ${token}` },

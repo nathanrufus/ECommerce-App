@@ -49,12 +49,6 @@ const CartItem: React.FC<CartItemProps> = ({
         >
           Remove
         </button>
-        <button
-          onClick={() => alert('Save for later clicked')}
-          className="px-3 py-1 text-sm text-white bg-blue-950 hover:bg-blue-900 rounded-md transition"
-        >
-          Save for Later
-        </button>
       </div>
     </div>
   );

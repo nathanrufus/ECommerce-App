@@ -14,10 +14,12 @@ type OrderItem = {
 type Order = {
   _id: string;
   customer_id: { name: string; email: string };
+  email: string ,
   status: string;
   total_amount: number;
   shipping_address: string;
   order_date: string;
+  phone: string;
   items: OrderItem[];
 };
 

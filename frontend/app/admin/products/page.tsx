@@ -18,6 +18,7 @@ type Product = {
 export default function AdminProductsPage() {
   const [products, setProducts] = useState<Product[]>([])
   const [searchQuery, setSearchQuery] = useState('')
+  const [loadingProducts, setLoadingProducts] = useState(true)
   const { user, token, isAdmin, loading } = useAuth()
   const router = useRouter()
 
@@ -28,6 +29,7 @@ export default function AdminProductsPage() {
 
     const fetchProducts = async () => {
       try {
+        setLoadingProducts(true)
         const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/products`, {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -37,17 +39,20 @@ export default function AdminProductsPage() {
         setProducts(data.products || data)
       } catch (err) {
         console.error("Failed to fetch products", err)
+      } finally {
+        setLoadingProducts(false)
       }
     }
 
-    fetchProducts()
+    if (!loading && isAdmin) {
+      fetchProducts()
+    }
   }, [loading, isAdmin])
 
   const handleDelete = (_id: string) => {
     setProducts((prev) => prev.filter((p) => p._id !== _id))
   }
 
-  // Filtered results based on search input
   const filteredProducts = products.filter((product) =>
     product.name.toLowerCase().includes(searchQuery.toLowerCase())
   )
@@ -73,7 +78,9 @@ export default function AdminProductsPage() {
         </div>
       </div>
 
-      {filteredProducts.length === 0 ? (
+      {loadingProducts ? (
+        <p className="text-center text-gray-500 mt-10">Loading products...</p>
+      ) : filteredProducts.length === 0 ? (
         <p className="text-gray-500">No products found.</p>
       ) : (
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">

@@ -6,12 +6,12 @@ import { FaFacebook, FaInstagram, FaTwitter } from 'react-icons/fa';
 export default function Footer() {
   return (
     <footer className="bg-[#1B1D30] text-gray-300 mt-auto">
-      <div className="max-w-7xl mx-auto px-4 pt-8 pb-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 text-sm">
+      <div className="max-w-7xl mx-auto px-4 pt-8 pb-4 grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-6 text-sm">
         {/* Contact Info */}
         <div>
           <h3 className="text-white font-semibold mb-2">Contact Us</h3>
-          <p className="mb-1">Email: info@kwalacomputers.co.ke</p>
-          <p className="mb-1">Phone: 0708 600 025</p>
+          <p className="mb-1">Email: Kwalastechnology@gmail.com</p>
+          <p className="mb-1">Phone: 0707555055</p>
           <p>WhatsApp: Available</p>
         </div>
 

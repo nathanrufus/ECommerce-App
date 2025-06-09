@@ -82,6 +82,7 @@ export default function NavMenu() {
                       { name: 'Orders', href: '/admin/orders' },
                       { name: 'Storefront', href: '/' },
                       { name: 'Tags', href: '/admin/tags' },
+                      { name: 'Users', href: '/admin/users' },
                     ].map((link) => (
                       <li key={link.name}>
                         <Link

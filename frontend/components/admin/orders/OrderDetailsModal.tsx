@@ -11,13 +11,16 @@ type OrderItem = {
 
 type Order = {
   _id: string;
-  customer_id: { name: string; email: string };
+  customer_id: { name: string};
+  email: string ,
   status: string;
   total_amount: number;
   shipping_address: string;
   order_date: string;
+  phone: string; 
   items: OrderItem[];
 };
+
 
 const statusOptions = ['pending', 'shipped', 'delivered', 'cancelled'];
 
@@ -88,7 +91,8 @@ export default function OrderDetailsModal({
 
         <div className="space-y-2 text-sm">
           {/* <div><strong>Customer:</strong> {order.customer_id?.name}</div> */}
-          <div><strong>Email:</strong> {order.customer_id?.email}</div>
+          <div><strong>Email:</strong> {order.email}</div>
+            <div><strong>Phone:</strong> {order.phone}</div> {/* ✅ Added */}
           <div><strong>Shipping Address:</strong> {order.shipping_address}</div>
           <div className="flex items-center gap-2">
             <strong>Status:</strong>

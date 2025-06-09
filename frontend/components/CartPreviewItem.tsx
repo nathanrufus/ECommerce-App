@@ -14,7 +14,7 @@ const CartPreviewItem: React.FC<CartPreviewItemProps> = ({ name, quantity, price
           <h4 className="text-sm font-semibold text-[#1B1D30]">{name}</h4>
           <p className="text-xs text-gray-500">Qty: {quantity}</p>
         </div>
-        <p className="text-sm font-medium text-gray-800">${(price * quantity).toFixed(2)}</p>
+        <p className="text-sm font-medium text-gray-800">KES {(price * quantity).toFixed(2)}</p>
       </div>
     </div>
   )

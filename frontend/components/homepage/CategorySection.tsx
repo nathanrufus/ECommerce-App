@@ -24,7 +24,7 @@ export default function CategorySection({
   products: Product[];
 }) {
   return (
-    <section className="py-3 bg-[#F8FAF8] dark:bg-[#121423]">
+    <section className="py-3 bg-gray-300 dark:bg-[#121423]">
       <div className="max-w-7xl mx-auto bg-white pb-3">
         {/* Gradient Header Block */}
         <div className="bg-gradient-to-r from-[#70B244] to-[#1B1D30] rounded-md px-4 py-2 mb-4 flex justify-between text-white text-sm sm:text-base shadow-sm">
