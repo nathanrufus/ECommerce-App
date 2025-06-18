@@ -6,8 +6,8 @@ export default function SupportPage() {
         Need help with a product or service? Our support team is here for you!
       </p>
       <ul className="list-disc list-inside text-gray-600 space-y-2">
-        <li>📧 Email us at: <a href="mailto:support@kwalascomputers.co.ke" className="text-green-600 underline">support@kwalascomputers.co.ke</a></li>
-        <li>📞 Call us: 0708 600 025</li>
+        <li>📧 Email us at: <a href="mailto:Kwalastechnology@gmail.com" className="text-green-600 underline">Kwalastechnology@gmail.com</a></li>
+        <li>📞 Call us: 0707555055</li>
         <li>💬 Chat with us on WhatsApp (bottom right corner)</li>
       </ul>
     </section>
