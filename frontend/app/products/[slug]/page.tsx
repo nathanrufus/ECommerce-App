@@ -8,6 +8,8 @@ import useCartStore from "@/store/cartStore";
 import { toast } from "react-hot-toast";
 import ReviewForm from "@/components/ReviewForm";
 import ProductCard from "@/components/ui/ProductCard";
+import WhatsAppLink from "@/components/ui/WhatsAppLink";
+
 
 
 type MediaFile = { file_url: string };
@@ -133,7 +135,7 @@ export default function ProductDetailsPage() {
           </h2>
           <p className="text-sm text-gray-600">{product.description}</p>
           <p className="text-lg font-bold text-[#1B1D30]">
-            ${product.price.toFixed(2)}
+            KES {product.price.toFixed(2)}
           </p>
           <p
             className={`text-sm font-medium ${
@@ -167,6 +169,15 @@ export default function ProductDetailsPage() {
           >
             Add to Cart
           </button>
+
+          {/* WhatsApp CTA */}
+          <WhatsAppLink
+            name={product.name}
+            price={product.price}
+            url={`https://yourdomain.com/products/${slug}`}
+            className=" ml-2 mt-4 px-6 py-3 rounded-md bg-green-400 hover:bg-[#70B244] text-white transition disabled:opacity-50"
+          />
+
         </div>
       </div>
 

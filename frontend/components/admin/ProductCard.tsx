@@ -12,6 +12,7 @@ type Product = {
   name: string;
   slug: string;
   price: number;
+  original_price?: number; // ✅ added
   stock_quantity: number;
   media_files?: MediaFile[];
   tags?: { _id: string; name: string }[];
@@ -60,8 +61,6 @@ export default function ProductCard({ product, onDelete }: Props) {
 
   return (
     <div className="bg-white rounded-xl shadow-sm p-4 relative border border-gray-200">
-      
-      {/* Optional Tag Pills */}
       {Array.isArray(product.tags) && product.tags.length > 0 && (
         <div className="absolute top-2 left-2 flex flex-wrap gap-1 z-10">
           {product.tags.map((tag) => (
@@ -75,7 +74,6 @@ export default function ProductCard({ product, onDelete }: Props) {
         </div>
       )}
 
-      {/* Image Carousel */}
       <div className="relative w-full aspect-[4/3] bg-gray-100 rounded-lg overflow-hidden mb-3">
         <Image
           key={activeImage}
@@ -88,7 +86,6 @@ export default function ProductCard({ product, onDelete }: Props) {
           className="object-cover rounded-md transition-opacity duration-500"
         />
 
-        {/* Dot indicators */}
         {images.length > 1 && (
           <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 flex gap-1">
             {images.map((_, i) => (
@@ -103,13 +100,20 @@ export default function ProductCard({ product, onDelete }: Props) {
         )}
       </div>
 
-      {/* Info */}
       <h3 className="font-medium text-sm text-[#1B1D30] truncate mb-1">
         {product.name}
       </h3>
+
       <p className="text-sm text-gray-600 mb-1">
-        ${Number(product.price).toFixed(2)}
+        KES {Number(product.price).toFixed(2)}
       </p>
+
+      {product.original_price && product.original_price > product.price && (
+        <p className="text-xs text-red-500 line-through">
+          KES {Number(product.original_price).toFixed(2)}
+        </p>
+      )}
+
       <p
         className={`text-xs font-medium ${
           product.stock_quantity > 0 ? "text-green-600" : "text-red-500"
@@ -118,7 +122,6 @@ export default function ProductCard({ product, onDelete }: Props) {
         {product.stock_quantity > 0 ? "In Stock" : "Out of Stock"}
       </p>
 
-      {/* Actions */}
       <div className="flex items-center gap-3 mt-3">
         <Link
           href={`/admin/products/${product._id}`}

@@ -16,6 +16,7 @@ export default function ProductForm() {
 
   const [name, setName] = useState('');
   const [price, setPrice] = useState('');
+  const [originalPrice, setOriginalPrice] = useState(''); // ✅ added
   const [stock, setStock] = useState('');
   const [description, setDescription] = useState('');
   const [shortDesc, setShortDesc] = useState('');
@@ -62,6 +63,7 @@ export default function ProductForm() {
     const formData = new FormData();
     formData.append('name', name);
     formData.append('price', price);
+    formData.append('original_price', originalPrice); // ✅ added
     formData.append('stock_quantity', stock);
     formData.append('description', description);
     formData.append('short_desc', shortDesc);
@@ -103,13 +105,22 @@ export default function ProductForm() {
 
       <input value={name} onChange={e => setName(e.target.value)} placeholder="Product Name *" required className="w-full p-2 border rounded" />
       <input value={price} onChange={e => setPrice(e.target.value)} placeholder="Price *" type="number" required className="w-full p-2 border rounded" />
+
+      {/* ✅ Original Price Input */}
+      <input
+        value={originalPrice}
+        onChange={(e) => setOriginalPrice(e.target.value)}
+        placeholder="Original Price"
+        type="number"
+        className="w-full p-2 border rounded"
+      />
+
       <input value={stock} onChange={e => setStock(e.target.value)} placeholder="Stock *" type="number" required className="w-full p-2 border rounded" />
       <textarea value={shortDesc} onChange={e => setShortDesc(e.target.value)} placeholder="Short Description" className="w-full p-2 border rounded" />
       <textarea value={description} onChange={e => setDescription(e.target.value)} placeholder="Full Description" className="w-full p-2 border rounded" />
       <input value={metaTitle} onChange={e => setMetaTitle(e.target.value)} placeholder="Meta Title" className="w-full p-2 border rounded" />
       <input value={metaDesc} onChange={e => setMetaDesc(e.target.value)} placeholder="Meta Description" className="w-full p-2 border rounded" />
 
-      {/* Category Select */}
       <select value={categoryId} onChange={(e) => setCategoryId(e.target.value)} required className="w-full p-2 border rounded">
         <option value="">Select Category</option>
         {categories.map((cat) => (
@@ -117,7 +128,6 @@ export default function ProductForm() {
         ))}
       </select>
 
-      {/* Brand Select */}
       <select value={brandId} onChange={(e) => setBrandId(e.target.value)} required className="w-full p-2 border rounded">
         <option value="">Select Brand</option>
         {brands.map((brand) => (
@@ -125,14 +135,12 @@ export default function ProductForm() {
         ))}
       </select>
 
-      {/* Tags Multi-select */}
       <select multiple value={tagIds} onChange={(e) => setTagIds(Array.from(e.target.selectedOptions, o => o.value))} className="w-full p-2 border rounded">
         {tags.map((tag) => (
           <option key={tag._id} value={tag._id}>{tag.name}</option>
         ))}
       </select>
 
-      {/* Image upload */}
       <input
         type="file"
         accept="image/*"
@@ -141,7 +149,6 @@ export default function ProductForm() {
         className="w-full p-2 border rounded"
       />
 
-      {/* Preview thumbnails */}
       {images && (
         <div className="flex flex-wrap gap-4 mt-2">
           {Array.from(images).map((img, i) => (

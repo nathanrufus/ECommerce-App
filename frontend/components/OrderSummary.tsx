@@ -1,5 +1,7 @@
 'use client';
 import React from 'react';
+import WhatsAppLink from '@/components/ui/WhatsAppLink';
+import useCartStore from '@/store/cartStore';
 
 type OrderSummaryProps = {
   subtotal: number;
@@ -8,6 +10,16 @@ type OrderSummaryProps = {
 
 const OrderSummary: React.FC<OrderSummaryProps> = ({ subtotal, onCheckout }) => {
   const total = subtotal;
+  const { cartItems } = useCartStore();
+
+  // Generate full cart message
+  const message = cartItems
+    .map(item => ` ${item.name} - KES ${item.price.toLocaleString()} x ${item.quantity}`)
+    .join('\n');
+
+  const whatsappMessage = `Hi! I'd like to order the following items:\n\n${message}\n\nTotal: KES ${total.toLocaleString()}`;
+
+  const whatsappUrl = `https://wa.me/${process.env.NEXT_PUBLIC_WHATSAPP_NUMBER}?text=${encodeURIComponent(whatsappMessage)}`;
 
   return (
     <div className="border border-gray-200 rounded-lg p-6 shadow-md bg-white">
@@ -30,6 +42,16 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({ subtotal, onCheckout }) => 
         >
           Proceed to Checkout
         </button>
+
+        {/* ✅ Order via WhatsApp */}
+        <a
+          href={whatsappUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="w-full mt-3 inline-block text-center bg-green-500 hover:bg-green-600 text-white py-2 px-4 rounded-md font-medium transition"
+        >
+          Order via WhatsApp
+        </a>
       </div>
     </div>
   );

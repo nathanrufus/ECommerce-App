@@ -22,12 +22,13 @@ export default function AdminProductEditForm() {
     description: '',
     short_desc: '',
     price: '',
+    original_price: '', // ✅
     stock_quantity: '',
     category_id: '',
     brand_id: '',
     meta_title: '',
     meta_description: '',
-    tag_ids: [] as string[], // ✅ include tags
+    tag_ids: [] as string[],
   });
   const [loading, setLoading] = useState(true);
   const [newImages, setNewImages] = useState<File[]>([]);
@@ -55,6 +56,7 @@ export default function AdminProductEditForm() {
           description: product.description || '',
           short_desc: product.short_desc || '',
           price: product.price || '',
+          original_price: product.original_price || '', // ✅
           stock_quantity: product.stock_quantity || '',
           category_id: product.category_id?._id || '',
           brand_id: product.brand_id?._id || '',
@@ -178,6 +180,12 @@ export default function AdminProductEditForm() {
           <label className="block text-sm font-medium text-gray-700">Price</label>
           <input name="price" type="number" value={form.price} onChange={handleChange} className="w-full p-2 border rounded" />
         </div>
+        {/* ✅ New: Original Price */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700">Original Price</label>
+          <input name="original_price" type="number" value={form.original_price} onChange={handleChange} className="w-full p-2 border rounded" />
+        </div>
+
         <div>
           <label className="block text-sm font-medium text-gray-700">Stock Quantity</label>
           <input name="stock_quantity" type="number" value={form.stock_quantity} onChange={handleChange} className="w-full p-2 border rounded" />

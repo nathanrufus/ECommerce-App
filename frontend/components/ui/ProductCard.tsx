@@ -7,6 +7,7 @@ import { FiHeart, FiShoppingCart } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 import useCartStore from '@/store/cartStore';
 import useWishlistStore from '@/store/wishlistStore';
+import WhatsAppLink from '@/components/ui/WhatsAppLink';
 
 export type Tag = {
   _id: string;
@@ -18,10 +19,10 @@ export type Product = {
   name: string;
   slug: string;
   price: number;
-  media_files?: { file_url: string }[]; // Optional here for flexibility
+  original_price?: number;
+  media_files?: { file_url: string }[];
   tags?: Tag[];
 };
-
 
 export default function ProductCard({ product }: { product: Product }) {
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -30,7 +31,6 @@ export default function ProductCard({ product }: { product: Product }) {
   const { addToCart } = useCartStore();
 
   const {
-    wishlist,
     addToWishlist,
     removeFromWishlist,
     isInWishlist,
@@ -43,7 +43,8 @@ export default function ProductCard({ product }: { product: Product }) {
 
   const isWishlisted = isInWishlist(product._id);
 
-  const handleWishlistToggle = () => {
+  const handleWishlistToggle = (e: React.MouseEvent) => {
+    e.stopPropagation();
     if (isWishlisted) {
       removeFromWishlist(product._id);
       toast.success('Removed from wishlist');
@@ -68,7 +69,9 @@ export default function ProductCard({ product }: { product: Product }) {
 
   const activeImage = images[currentIndex]?.file_url || '/image.webp';
 
-  const handleAddToCart = () => {
+  const handleAddToCart = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    e.preventDefault();
     if (adding) return;
     setAdding(true);
     addToCart({
@@ -82,11 +85,18 @@ export default function ProductCard({ product }: { product: Product }) {
     setTimeout(() => setAdding(false), 1000);
   };
 
+  const hasDiscount =
+    product.original_price && product.original_price > product.price;
+
+  const discountPercent = hasDiscount
+    ? Math.round(100 - (product.price / product.original_price!) * 100)
+    : 0;
+
   return (
-    <div className="bg-white border border-gray-200 rounded-2xl hover:shadow-md transition-all p-5 flex flex-col group relative overflow-hidden min-h-[360px]">
+    <div className="bg-white border border-gray-200 rounded-2xl hover:shadow-md transition-all p-5 flex flex-col group relative overflow-hidden min-h-[300px]">
 
       {/* Tags (top-left) */}
-     {Array.isArray(product.tags) && product.tags.length > 0 && (
+      {Array.isArray(product.tags) && product.tags.length > 0 && (
         <div className="absolute top-2 left-2 flex flex-wrap gap-1 z-10">
           {product.tags.map((tag) => (
             <span
@@ -99,65 +109,86 @@ export default function ProductCard({ product }: { product: Product }) {
         </div>
       )}
 
-      {/* Wishlist Icon (top-right) */}
-      <button
-        onClick={handleWishlistToggle}
-        className={`absolute top-3 right-3 transition z-10 ${
-          isWishlisted ? 'text-red-500' : 'text-gray-400 hover:text-red-500'
-        }`}
-        title="Toggle wishlist"
-      >
-        <FiHeart className="w-5 h-5" />
-      </button>
+      {/* Discount Badge */}
+      {hasDiscount && (
+        <div className="absolute top-2 right-2 bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full z-10">
+          -{discountPercent}%
+        </div>
+      )}
 
-      {/* Product Image with Dots */}
-      <div className="relative w-full aspect-[4/3] bg-gray-100 rounded-lg overflow-hidden">
-        <Image
-          key={activeImage}
-          src={activeImage}
-          alt={product.name}
-          fill
-          unoptimized
-          loading="lazy" // <-- this ensures image lazy loading
-          className="object-cover transition-opacity duration-700 ease-in-out"
-        />
+      {/* Image Section as Link */}
+      <Link href={`/products/${product.slug}`} className="block">
+        <div className="relative w-full aspect-[4/3] bg-gray-100 rounded-lg overflow-hidden">
+          <Image
+            key={activeImage}
+            src={activeImage}
+            alt={product.name}
+            fill
+            unoptimized
+            loading="lazy"
+            className="object-cover transition-opacity duration-700 ease-in-out"
+          />
 
-        {images.length > 1 && (
-          <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 flex gap-1">
-            {images.map((_, i) => (
-              <span
-                key={i}
-                className={`w-2 h-2 rounded-full ${
-                  i === currentIndex ? 'bg-green-600' : 'bg-gray-300'
-                } transition-all duration-300`}
-              ></span>
-            ))}
-          </div>
-        )}
-      </div>
+          {images.length > 1 && (
+            <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 flex gap-1">
+              {images.map((_, i) => (
+                <span
+                  key={i}
+                  className={`w-2 h-2 rounded-full ${
+                    i === currentIndex ? 'bg-green-600' : 'bg-gray-300'
+                  } transition-all duration-300`}
+                ></span>
+              ))}
+            </div>
+          )}
+        </div>
+      </Link>
 
-      {/* Product Info */}
-      <div className="flex-grow">
-        <h3
-          className="font-medium text-black text-sm mb-2 line-clamp-2"
-          title={product.name}
-        >
-          {product.name}
-        </h3>
+      {/* Info */}
+      <div className="flex-grow mt-3">
+        <Link href={`/products/${product.slug}`}>
+          <h3
+            className="font-medium text-black text-sm mb-2 line-clamp-2"
+            title={product.name}
+          >
+            {product.name}
+          </h3>
+        </Link>
       </div>
 
       {/* Price + Actions */}
       <div className="flex justify-between items-center mt-auto">
-        <p className="text-sm font-semibold text-gray-800">
-          KES {Number(product.price).toLocaleString()}
-        </p>
+        <div className="space-y-0.5">
+          <p className="text-sm font-semibold text-gray-800">
+            KES {Number(product.price).toLocaleString()}
+          </p>
+          {hasDiscount && (
+            <p className="text-xs text-red-500 line-through">
+              KES {Number(product.original_price).toLocaleString()}
+            </p>
+          )}
+
+          
+        </div>
+
         <div className="flex items-center space-x-3">
-          <Link
-            href={`/products/${product.slug}`}
-            className="text-xs text-green-600 hover:underline"
+
+      {/* Wishlist Icon */}
+          <button
+            onClick={handleWishlistToggle}
+            className={` ${
+              isWishlisted ? 'text-red-500' : 'text-gray-400 hover:text-red-500'
+            }`}
+            title="Toggle wishlist"
           >
-            View
-          </Link>
+            <FiHeart className="w-5 h-5" />
+          </button>
+          {/* WhatsApp */}
+          <WhatsAppLink
+            name={product.name}
+            price={product.price}
+            url={`https://yourdomain.com/products/${product.slug}`}
+          />
           <button
             onClick={handleAddToCart}
             disabled={adding}

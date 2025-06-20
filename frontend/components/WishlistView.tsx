@@ -7,6 +7,8 @@ import { FiTrash2 } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 import useCartStore from '@/store/cartStore';
 import useWishlistStore from '@/store/wishlistStore';
+import WhatsAppLink from '@/components/ui/WhatsAppLink';
+
 
 export default function WishlistView() {
   const router = useRouter();
@@ -25,12 +27,6 @@ export default function WishlistView() {
   const handleAddToCart = (item: typeof wishlist[number]) => {
     addToCart({ id: item.id, name: item.name, price: item.price, quantity: 1 });
     toast.success('Added to cart');
-  };
-
-  const handleBuyNow = (item: typeof wishlist[number]) => {
-    clearCart();
-    addToCart({ id: item.id, name: item.name, price: item.price, quantity: 1 });
-    router.push('/checkout');
   };
 
   if (wishlist.length === 0) {
@@ -69,12 +65,11 @@ export default function WishlistView() {
               >
                 Add to Cart
               </button>
-              <button
-                onClick={() => handleBuyNow(item)}
-                className="px-4 py-1.5 text-sm rounded-md bg-blue-950 text-white hover:bg-blue-900 transition"
-              >
-                Buy Now
-              </button>
+              <WhatsAppLink
+              name={item.name}
+              price={item.price}
+              className="px-4 py-1.5 text-sm rounded-md bg-green-500 hover:bg-green-600 text-white transition"
+            />
             </div>
           </div>
 

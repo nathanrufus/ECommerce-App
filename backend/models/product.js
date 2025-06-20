@@ -6,6 +6,7 @@ const productSchema = new mongoose.Schema({
   description: String,
   short_desc: String,
   price: Number,
+  original_price: Number, 
   stock_quantity: Number,
   category_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Category' },
   brand_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Brand' },
@@ -13,4 +14,5 @@ const productSchema = new mongoose.Schema({
   meta_description: String,
   tags: [{ type: mongoose.Schema.Types.ObjectId, ref: 'ProductTag' }]
 }, { timestamps: true });
+
 module.exports = mongoose.model('Product', productSchema);
