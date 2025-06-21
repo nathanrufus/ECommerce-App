@@ -33,6 +33,7 @@
     "puppeteer": "^24.10.1",
     "resend": "^4.5.2",
     "sequelize": "^6.37.7",
+    "sib-api-v3-sdk": "^8.5.0",
     "slugify": "^1.6.6"
   },
   "devDependencies": {

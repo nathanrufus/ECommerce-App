@@ -23,7 +23,6 @@ export default function ProductSearchFilterPage() {
   const router = useRouter();
 
   const [products, setProducts] = useState<Product[]>([]);
-  const [brands, setBrands] = useState<Brand[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
 
   const [filters, setFilters] = useState({
@@ -33,18 +32,18 @@ export default function ProductSearchFilterPage() {
     maxPrice: searchParams.get('maxPrice') || '',
   });
 
-  useEffect(() => {
-    fetch('/api/brands')
-      .then(async (res) => {
-        if (!res.ok) throw new Error(await res.text());
-        const data = await res.json();
-        setBrands(Array.isArray(data) ? data : []);
-      })
-      .catch((err) => {
-        console.error('Failed to load brands:', err);
-        setBrands([]);
-      });
-  }, []);
+  // useEffect(() => {
+  //   fetch('/api/brands')
+  //     .then(async (res) => {
+  //       if (!res.ok) throw new Error(await res.text());
+  //       const data = await res.json();
+  //       setBrands(Array.isArray(data) ? data : []);
+  //     })
+  //     .catch((err) => {
+  //       console.error('Failed to load brands:', err);
+  //       setBrands([]);
+  //     });
+  // }, []);
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -99,7 +98,7 @@ export default function ProductSearchFilterPage() {
           className="border border-gray-300 rounded-md px-4 py-2"
         />
 
-        <select
+        {/* <select
           value={filters.brand}
           onChange={(e) => handleFilterChange('brand', e.target.value)}
           className="border border-gray-300 rounded-md px-4 py-2"
@@ -110,7 +109,7 @@ export default function ProductSearchFilterPage() {
               {brand.name}
             </option>
           ))}
-        </select>
+        </select> */}
 
         <input
           type="number"
